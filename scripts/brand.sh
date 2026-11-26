@@ -6,6 +6,8 @@ CHROME="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
 shot() { "$CHROME" --headless=new --hide-scrollbars --force-device-scale-factor=1 --window-size="$2" --virtual-time-budget=3000 --screenshot="$ROOT/site/$3" "file://$ROOT/brand/$1" >/dev/null 2>&1; echo "site/$3"; }
 shot og.html 1200,630 og.png
 shot icon.html 512,512 icon-512.png
+# Buy Me a Coffee cover: 1600x400 rendered at 2x. Not part of the site, kept in brand/export.
+"$CHROME" --headless=new --hide-scrollbars --force-device-scale-factor=2 --window-size=1600,400 --virtual-time-budget=3000 --screenshot="$ROOT/brand/export/bmc-cover.png" "file://$ROOT/brand/bmc-cover.html" >/dev/null 2>&1; echo "brand/export/bmc-cover.png"
 # Chrome cannot open a window as small as 180 px, so the touch icon is scaled down from the 512 one.
 sips -z 180 180 "$ROOT/site/icon-512.png" --out "$ROOT/site/apple-touch-icon.png" >/dev/null; echo "site/apple-touch-icon.png"
 
