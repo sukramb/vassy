@@ -111,6 +111,11 @@ scripts/release.sh         # signed, notarized universal build in dist/
 
 The website is the static page in `site/`.
 
+## License
+
+MIT, see [LICENSE](LICENSE). The fonts in `site/fonts` are under the SIL Open Font
+License; their license texts are in the same folder.
+
 ---
 
-Vassy is an independent project, not affiliated with or endorsed by Anthropic or OpenAI.
+Vassy is a product of Heartly Apps UG (haftungsbeschränkt). It is an independent project, not affiliated with or endorsed by Anthropic or OpenAI.
