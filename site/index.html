@@ -77,12 +77,15 @@ kbd { font-family: var(--mac); font-size: .82em; font-weight: 600; padding: 2px 
 .menubar .brand { font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .menubar .status { gap: 14px; color: var(--ink); }
 .menubar .status .hot { color: var(--ink-2); font-weight: 600; letter-spacing: .02em; }
+.menubar .coffee { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--wait); padding: 3px 9px; }
+.menubar .coffee:hover { background: rgba(180,70,11,.12); }
+.coffee svg { width: 16px; height: 16px; }
 .tray { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 6px; background: rgba(23,21,15,.1); font-weight: 600; font-variant-numeric: tabular-nums; }
 .tray svg { width: 17px; height: 17px; }
 .tray b { min-width: 1ch; display: inline-block; text-align: center; transition: transform .25s cubic-bezier(.3,1.6,.5,1); }
 .tray.bump b { transform: scale(1.5); }
 .tray.clear { background: rgba(21,128,61,.14); color: var(--good); }
-@media (max-width: 760px) { .menubar nav a:not(.brand), .menubar .hot, .menubar .clock { display: none; } }
+@media (max-width: 760px) { .menubar nav a:not(.brand), .menubar .hot, .menubar .clock { display: none; } .menubar .status { gap: 8px; } }
 
 /* ── hero ───────────────────────────────────────────────── */
 .hero { padding: 116px 0 90px; }
@@ -288,6 +291,13 @@ h1 span { display: block; }
 .shell button:focus-visible { outline: 2px solid #FDBA74; outline-offset: 2px; }
 .shell pre { margin: 0; padding: 24px 22px 26px; font-family: var(--mono); font-size: 14.5px; line-height: 1.9; white-space: pre-wrap; word-break: break-word; }
 .shell pre .p { color: #FDBA74; user-select: none; -webkit-user-select: none; } .shell pre .dim { color: #7A7568; }
+.dl { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.dl li { display: grid; grid-template-columns: 54px 1fr; gap: 6px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+.dl .no { font-family: var(--serif); font-style: italic; font-size: 40px; line-height: 1; color: var(--wait); }
+.dl h3 { font-family: var(--sans); font-weight: 600; font-size: 19px; margin-bottom: 5px; letter-spacing: -.01em; }
+.dl p { margin: 0; color: var(--ink-2); font-size: 16px; max-width: none; }
+.dl .btn { margin-top: 16px; }
+.after a { color: var(--wait); font-weight: 600; }
 .after { margin-top: 18px; font-size: 14.5px; color: var(--ink-2); }
 @media (max-width: 900px) { .privacy .wrap, .install .wrap { grid-template-columns: 1fr; gap: 44px; } }
 
@@ -334,6 +344,10 @@ footer p { margin: 0; max-width: 44em; }
     <a href="#install">Install</a>
   </nav>
   <div class="status">
+    <a class="coffee" href="https://buymeacoffee.com/sukrambm" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h12v5a5 5 0 01-5 5h-2a5 5 0 01-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 010 5H17"/><path d="M8 3.5c0 1 1 1 1 2M12 3.5c0 1 1 1 1 2"/></svg>
+      <span>Buy me a coffee</span>
+    </a>
     <span class="tray" id="tray" title="Sessions waiting on you">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2.5" fill="currentColor"/><path d="M6 7h12M8.5 3.5h7"/></svg>
       <b id="trayN">4</b>
@@ -360,13 +374,13 @@ footer p { margin: 0; max-width: 44em; }
         <strong>one question and a recommendation</strong>, then types your answer into the right Terminal tab.
       </p>
       <div class="cta rise" style="--d:6">
-        <a class="btn primary" href="#install">
-          Install Vassy
+        <a class="btn primary" href="download/Vassy.zip" download>
+          Download for macOS
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v13M6 12l6 6 6-6"/></svg>
         </a>
-        <a class="btn ghost" href="https://github.com/sukramb/vassy">View the source</a>
+        <a class="btn ghost" href="#how">How it works</a>
       </div>
-      <div class="meta rise" style="--d:7"><span>macOS 15 or later</span><span>Terminal.app</span><span>No account, no server</span></div>
+      <div class="meta rise" style="--d:7"><span>Free</span><span>macOS 15 or later</span><span>Signed &amp; notarized</span></div>
     </div>
 
     <div class="stage rise" style="--d:4">
@@ -516,21 +530,25 @@ UserPromptSubmit · SessionEnd
   <div class="wrap">
     <div>
       <p class="kicker reveal">Install</p>
-      <h2 class="reveal">Two lines, <em>then it&rsquo;s there.</em></h2>
-      <p class="reveal">Vassy is built from source on your own machine, so you can read every line before it runs.</p>
+      <h2 class="reveal">Download, drag, <em>done.</em></h2>
+      <p class="reveal">Vassy is free. It is signed and notarized by Apple, so it opens like any other Mac app.</p>
       <ul class="needs reveal">
         <li>macOS 15 or later, with Terminal.app</li>
         <li>Claude Code, signed in</li>
-        <li>Xcode Command Line Tools</li>
+        <li>Codex CLI works too; that support is new and still in beta</li>
       </ul>
     </div>
     <div class="reveal" style="--d:1">
-      <div class="shell">
-        <div class="bar"><span>zsh</span><button type="button" id="copy">Copy</button></div>
-<pre id="cmd"><span class="p">$ </span>git clone https://github.com/sukramb/vassy.git
-<span class="p">$ </span>cd vassy &amp;&amp; ./install.sh</pre>
-      </div>
-      <p class="after">The installer builds the app into <code class="inl">~/Applications</code> and adds its hook to <code class="inl">~/.claude/settings.json</code>, after saving a backup. To remove everything again: <code class="inl">./install.sh --uninstall</code></p>
+      <ol class="dl">
+        <li><span class="no">1</span><div><h3>Download Vassy</h3><p>A small zip, under 1 MB, for Apple silicon and Intel Macs.</p>
+          <a class="btn primary" href="download/Vassy.zip" download>
+            Download for macOS
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v13M6 12l6 6 6-6"/></svg>
+          </a></div></li>
+        <li><span class="no">2</span><div><h3>Move it to Applications</h3><p>Unzip, then drag Vassy into your Applications folder.</p></div></li>
+        <li><span class="no">3</span><div><h3>Open it and pick your agents</h3><p>Vassy adds its hook to the agents you choose, after saving a backup of each config file. Then press <kbd>⌥⌘C</kbd> from anywhere.</p></div></li>
+      </ol>
+      <p class="after">Like it? <a href="https://buymeacoffee.com/sukrambm" target="_blank" rel="noopener">Buy me a coffee.</a></p>
     </div>
   </div>
 </section>
@@ -540,7 +558,8 @@ UserPromptSubmit · SessionEnd
 <footer>
   <div class="wrap">
     <span class="word">Vassy</span>
-    <p>An independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic, PBC.</p>
+    <p>A product of Heartly Apps UG (haftungsbeschr&auml;nkt) &middot; <a href="https://www.heartly.io/imprint" rel="noopener">Imprint</a> &middot; <a href="https://buymeacoffee.com/sukrambm" target="_blank" rel="noopener">Buy me a coffee</a><br>
+    Independent, not affiliated with or endorsed by Anthropic or OpenAI. Claude, Claude Code and Codex are trademarks of their owners.</p>
   </div>
 </footer>
 
@@ -694,13 +713,6 @@ UserPromptSubmit · SessionEnd
   const tick = () => { clock.textContent = new Date().toLocaleString('en-US', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).replace(',', ''); };
   tick(); setInterval(tick, 20000);
 
-  // copy install command
-  $('copy').onclick = async function () {
-    const text = 'git clone https://github.com/sukramb/vassy.git\ncd vassy && ./install.sh';
-    try { await navigator.clipboard.writeText(text); this.textContent = 'Copied'; }
-    catch { this.textContent = 'Select and copy'; }
-    setTimeout(() => { this.textContent = 'Copy'; }, 1800);
-  };
 })();
 </script>
 </body>
