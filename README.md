@@ -58,16 +58,38 @@ questions: `./install.sh --agents claude,codex`. To remove every hook entry:
    agent is not affected.
 2. **Summary.** The app reads the tail of the session's transcript and asks a CLI you
    already have for a compact JSON summary: `claude -p` on the small model, or
-   `codex exec` if only Codex is installed. The call runs with tools and MCP servers
-   switched off, and the transcript is passed as data, not as instructions.
+   `codex exec` if only Codex is installed. Claude runs with tools and MCP servers
+   switched off; Codex runs without your config in a read-only sandbox. The transcript
+   is passed as data, not as instructions.
 3. **Answer.** Your reply is typed into the session's Terminal tab through AppleScript.
    macOS asks once for permission to control Terminal.
 
+## Safety
+
+A summary is written by a model that has read your session, and a session can contain
+text from web pages or repositories you do not control. Vassy therefore treats the
+ready-made answers as untrusted:
+
+- The exact text that will be typed is always shown on the button.
+- Answers that look like a shell command, slash command, memory note, link or shell
+  syntax are dropped.
+- Anything that deploys, merges, deletes or installs needs a second click, decided by
+  Vassy as well as by the model.
+- Nothing is typed unless the agent is the program in the foreground of that tab, so a
+  reply can never land at a shell prompt.
+- While an agent shows a permission dialog, Vassy sends nothing and only opens the tab.
+
+`~/.vassy` is readable by your user only.
+
 ## Privacy
 
-Vassy has no server, no account and no analytics. The only place a transcript is sent
-is the agent CLI that produced it, on the login you already use. All state lives in
-`~/.vassy`.
+Vassy has no account and no analytics. A transcript is only ever handed to an agent CLI
+that is already on your Mac (Claude Code, or Codex if that is the one you have), on the
+login you already use. All state lives in `~/.vassy`.
+
+The app's only request of its own is an update check: once a day it fetches
+`https://vassy.app/version.json`, without cookies or any identifier, and shows a link
+when a newer version exists. Switch it off under gear menu › Check for updates.
 
 ## Configuration
 
@@ -106,6 +128,7 @@ summarizer assign sessions that run elsewhere.
 
 ```sh
 ./build.sh                 # build and install for this Mac (ad-hoc signed)
+swift build && "$(swift build --show-bin-path)/Vassy" --selftest   # checks the safety guards
 scripts/release.sh         # signed, notarized universal build in dist/
 ```
 

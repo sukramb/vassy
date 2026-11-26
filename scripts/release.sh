@@ -28,5 +28,7 @@ xcrun notarytool submit "$ZIP" --keychain-profile "$PROFILE" --wait
 xcrun stapler staple "$APP"
 ditto -c -k --keepParent "$APP" "$ZIP"   # zip again so the download carries the stapled ticket
 spctl --assess --type execute --verbose=2 "$APP"
+# The running app reads version.json once a day to offer the update.
+print -r -- "{\"version\": \"$(<"$ROOT/VERSION")\"}" > "$ROOT/site/version.json"
 mkdir -p "$ROOT/site/download" && cp "$ZIP" "$ROOT/site/download/Vassy.zip"   # served at vassy.app/download/Vassy.zip
 echo "Release ready: $ZIP (copied to site/download; commit and push to publish)"

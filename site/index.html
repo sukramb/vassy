@@ -651,9 +651,9 @@ UserPromptSubmit · SessionEnd
       <h2 class="reveal">Your code goes <em>nowhere new.</em></h2>
     </div>
     <ul class="plist">
-      <li class="reveal"><span class="no">01</span><div><h3>No server, no account, no analytics</h3><p>Vassy is a single local app. It has no backend and never phones home.</p></div></li>
+      <li class="reveal"><span class="no">01</span><div><h3>No account, no analytics</h3><p>Vassy is a single local app without a backend. Its only request to us is a daily look at one small file to see whether a newer version exists, and you can switch that off.</p></div></li>
       <li class="reveal"><span class="no">02</span><div><h3>Summaries run through your own agent</h3><p>The only place a transcript is sent is an agent CLI already on your Mac: Claude Code, or Codex if that is the one you have. It runs on the login you already use.</p></div></li>
-      <li class="reveal"><span class="no">03</span><div><h3>The summarizer can read, nothing else</h3><p>It runs with tools and MCP servers switched off, and treats the transcript as data rather than instructions.</p></div></li>
+      <li class="reveal"><span class="no">03</span><div><h3>Answers are checked before they are typed</h3><p>The summarizer treats your session as data, not instructions. Every ready-made answer shows its exact text; anything that looks like a command is dropped, and nothing is typed unless your agent is the program in that tab.</p></div></li>
       <li class="reveal"><span class="no">04</span><div><h3>Open source</h3><p>Every line is <a href="https://github.com/sukramb/vassy" target="_blank" rel="noopener">on GitHub</a> under the MIT license. Read what the hook and the summarizer do before you install.</p></div></li>
       <li class="reveal"><span class="no">05</span><div><h3>Everything stays in one folder</h3><p>Queue state lives in <code>~/.vassy</code>. Delete the folder and it is gone.</p></div></li>
     </ul>

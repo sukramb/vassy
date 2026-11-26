@@ -17,7 +17,7 @@
 <main>
 <p class="kicker">Legal &middot; GDPR</p>
 <h1>Privacy</h1>
-<p class="lede">Short version: this website sets no cookies and runs no analytics, and the Vassy app sends us nothing. Last updated: November 2026.</p>
+<p class="lede">Short version: this website sets no cookies and runs no analytics, and the Vassy app sends us nothing but a daily check for a new version, which you can switch off. Last updated: November 2026.</p>
 
 <h2>Who is responsible</h2>
 <address>
@@ -42,10 +42,11 @@ Email: <a href="mailto:support@heartly.io">support@heartly.io</a>
 <p>The site links to other services, for example Buy Me a Coffee and Wispr Flow. No data is sent to them until you click a link. From then on, the privacy policy of that provider applies.</p>
 
 <h2>The Vassy app</h2>
-<p>Vassy runs entirely on your Mac. It has no server, no account and no telemetry, so we receive no data from the app.</p>
+<p>Vassy runs on your Mac. It has no account and no telemetry, and it sends us nothing about you or your sessions.</p>
 <ul>
 <li>Its state (which sessions are waiting, their summaries, your settings) is stored in the folder <code>~/.vassy</code> on your Mac.</li>
 <li>To write a summary, Vassy hands an excerpt of a session's transcript to the Claude Code or Codex command-line tool that is already installed and signed in on your Mac. That tool sends it to its provider (Anthropic or OpenAI) under your own account and that provider's terms. We are not involved in this and cannot see it.</li>
+<li>Update check: once a day the app requests the file <code>vassy.app/version.json</code> to see whether a newer version exists. The request carries no identifier and no cookies; as with any visit to this website, the hosting provider processes your IP address to answer it (see above). You can switch the check off in the app&rsquo;s gear menu under &ldquo;Check for updates&rdquo;.</li>
 <li>macOS may contact Apple to check the app's notarization when you first open it. That is a function of macOS, not of Vassy.</li>
 </ul>
 

@@ -19,11 +19,11 @@ enum Hook {
         let input = FileHandle.standardInput.readDataToEndOfFile()
         guard input.count < 1_000_000,
               let e = try? JSONSerialization.jsonObject(with: input) as? [String: Any],
-              let sid = e["session_id"] as? String,
-              sid.range(of: #"^[A-Za-z0-9_-]{8,80}$"#, options: .regularExpression) != nil,
+              let sid = e["session_id"] as? String, HookEvent.validId(sid),
               let event = e["hook_event_name"] as? String, events[agent]?.contains(event) == true
         else { exit(0) }
 
+        Paths.secure()
         let dir = Paths.base.appendingPathComponent("events")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let file = dir.appendingPathComponent(sid + ".json")
@@ -32,12 +32,9 @@ enum Hook {
         // PostToolUse only matters to end a "waiting for permission" state.
         if event == "PostToolUse", prev?.event != "PermissionRequest" { exit(0) }
 
-        var tty = prev?.tty, pid = prev?.pid
-        if tty == nil || pid == nil {
-            let found = origin(of: getppid(), agent: agent)
-            tty = tty ?? found.tty
-            pid = pid ?? found.pid
-        }
+        // Looked up on every call: a resumed session can live in another tab under a new pid.
+        let found = origin(of: getppid(), agent: agent)
+        let tty = found.tty ?? prev?.tty, pid = found.pid ?? prev?.pid
         // Sessions without a terminal (desktop apps, headless runs) cannot be answered from Vassy.
         if agent != .claude, tty == nil { exit(0) }
 

@@ -7,9 +7,12 @@ cd "$HERE"
 ARCHS=(${=VASSY_ARCHS:-})
 FLAGS=(-c release ${ARCHS:+${ARCHS/#/--arch=}})
 swift build $FLAGS 2>&1 | grep -vE "^\[|Compiling|Building" || true
+(( ${pipestatus[1]} == 0 )) || { echo "Build failed." >&2; exit 1; }
 BIN="$(swift build $FLAGS --show-bin-path)/Vassy"
 APP="${VASSY_APP:-$HOME/Applications/Vassy.app}"
 IDENTITY="${VASSY_SIGN_IDENTITY:--}"
+VERSION="$(<"$HERE/VERSION")"
+[[ "$APP" == */Vassy.app ]] || { echo "Refusing to build into $APP: the path must end in /Vassy.app" >&2; exit 1; }
 [[ -n "${VASSY_APP:-}" ]] || pkill -x Vassy 2>/dev/null || true
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
@@ -25,8 +28,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleExecutable</key><string>Vassy</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
+  <key>CFBundleVersion</key><string>$VERSION</string>
   <key>LSMinimumSystemVersion</key><string>15.0</string>
   <key>LSUIElement</key><true/>
   <key>NSAppleEventsUsageDescription</key><string>Vassy types your answers into the right Terminal tab and brings it to the front.</string>

@@ -5,6 +5,7 @@ enum Tab { case queue, all }
 
 struct RootView: View {
     @ObservedObject var store: Store
+    @ObservedObject private var updates = Updates.shared
     @State private var tab: Tab
 
     init(store: Store, initialTab: Tab = .queue) {
@@ -53,13 +54,20 @@ struct RootView: View {
         HStack(spacing: 10) {
             let busy = store.running.count
             Text(busy == 0 ? "No session is working" : "Working right now: \(busy)")
+            if let version = updates.available {
+                Button("Update to \(version)") { NSWorkspace.shared.open(Updates.downloadPage) }
+                    .buttonStyle(.plain).fontWeight(.semibold).foregroundStyle(Color.waiting)
+                    .help("Opens vassy.app, where the new version can be downloaded")
+            }
             Spacer()
             Text("⌥⌘C").fontWeight(.semibold)
             Menu {
                 Toggle("Launch at login", isOn: Binding(
                     get: { SMAppService.mainApp.status == .enabled },
                     set: { on in try? on ? SMAppService.mainApp.register() : SMAppService.mainApp.unregister() }))
+                Toggle("Check for updates", isOn: Binding(get: { updates.enabled }, set: { updates.enabled = $0 }))
                 Button("Agents…") { SetupWindow.show() }
+                Text("Vassy \(Updates.current)")
                 Divider()
                 Button("Quit") { NSApp.terminate(nil) }
             } label: { Image(systemName: "gearshape") }
@@ -195,8 +203,7 @@ struct CurrentCard: View {
     @ObservedObject var store: Store
     let item: SessionItem
     @State private var draft = ""
-    @State private var confirm: Int?
-    @State private var hoverText: String?
+    @State private var confirm: String?   // text of the action awaiting its second click
     @FocusState private var fieldFocused: Bool
 
     var body: some View {
@@ -222,14 +229,26 @@ struct CurrentCard: View {
                 if !s.question.isEmpty || !s.recommendation.isEmpty {
                     QuestionBox(item: item, summary: s)
                 }
-                if item.summarizing { Label("Summarizing the new reply …", systemImage: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 12)).foregroundStyle(.secondary) }
-                actionButtons(s)
+                // Ready-made answers belong to the question they were written for: none while a
+                // newer turn is being summarized, and none for an approval dialog.
+                if item.summarizing {
+                    Label("Summarizing the new reply …", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                } else if !item.event.needsPermission {
+                    actionButtons(s)
+                }
             } else {
                 pendingSummary
             }
 
-            replyField
+            if item.event.needsPermission {
+                Label("\(item.event.agentKind.name) is asking for permission in its terminal. Open the tab and decide there.",
+                      systemImage: "hand.raised")
+                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.waiting)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                replyField
+            }
             bottomRow
         }
         .padding(18)
@@ -237,6 +256,7 @@ struct CurrentCard: View {
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(cardStroke))
         .onAppear { focusSoon() }
         .onChange(of: store.focusTick) { focusSoon() }
+        .onChange(of: item.summary?.basedOn) { confirm = nil }
     }
 
     private var cardFill: Color { item.isTask || item.summary == nil ? Color.primary.opacity(0.04) : Color.waiting.opacity(0.08) }
@@ -257,7 +277,7 @@ struct CurrentCard: View {
         } else {
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text("Wird zusammengefasst …")
+                Text("Summarizing …")
             }
             .font(.system(size: 13)).foregroundStyle(.secondary)
         }
@@ -270,34 +290,33 @@ struct CurrentCard: View {
         if !s.actions.isEmpty {
             VStack(spacing: 6) {
                 ForEach(Array(s.actions.enumerated()), id: \.offset) { i, a in
-                    let confirming = confirm == i
+                    let confirming = confirm == a.text
                     Button {
-                        if a.prod == true && !confirming { confirm = i; return }
+                        if a.prod == true && !confirming { confirm = a.text; return }
                         confirm = nil
                         store.send(a.text, to: item)
                     } label: {
-                        HStack(spacing: 7) {
-                            if a.prod == true { Image(systemName: "arrow.up.circle.fill") }
-                            Text(confirming ? "Really ship this? Click again" : (i == 0 ? "\(a.label)  ·  Recommended" : a.label))
-                            Spacer()
-                            Text("⌘\(i + 1)").font(.system(size: 11, weight: .medium)).opacity(0.7)
+                        // The exact text that will be typed is always on the button, never
+                        // only behind a hover: the label is written by the summarizer.
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 7) {
+                                if a.prod == true { Image(systemName: "arrow.up.circle.fill") }
+                                Text(confirming ? "Really send this? Click again" : (i == 0 ? "\(a.label)  ·  Recommended" : a.label))
+                                Spacer()
+                                Text("⌘\(i + 1)").font(.system(size: 11, weight: .medium)).opacity(0.7)
+                            }
+                            .font(.system(size: 13.5, weight: .semibold))
+                            Text("“\(a.text)”").font(.system(size: 11.5, design: .monospaced)).opacity(0.78)
+                                .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .font(.system(size: 13.5, weight: .semibold))
-                        .padding(.horizontal, 14).frame(height: 40)
+                        .padding(.horizontal, 14).padding(.vertical, 9)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(ActionStyle(kind: confirming ? .danger : (i == 0 ? .primary : .secondary)))
                     .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: .command)
-                    .onHover { hoverText = $0 ? a.text : nil }
-                    .help(a.text)
                 }
             }
-            Group {
-                if let h = hoverText {
-                    (Text("Sends: ").fontWeight(.semibold) + Text("“\(h)”").font(.system(size: 11.5, design: .monospaced)))
-                } else { Text(" ") }
-            }
-            .font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(2)
         }
     }
 
@@ -453,7 +472,7 @@ struct NextRow: View {
                         if item.showAgent { AgentTag(agent: item.event.agentKind) }
                         Text(item.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                     }
-                    Text(item.summary?.question ?? "Wird zusammengefasst …").font(.system(size: 12))
+                    Text(item.summary?.question ?? "Summarizing …").font(.system(size: 12))
                         .foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 4)
@@ -577,7 +596,7 @@ struct OverviewRow: View {
 
     private var subtitle: String {
         switch style {
-        case .waiting: return item.summary?.question ?? "Wird zusammengefasst …"
+        case .waiting: return item.summary?.question ?? "Summarizing …"
         case .running: return item.summary.map { "Working · last: \($0.title)" } ?? "Working …"
         case .done: return item.summary?.state ?? ""
         }

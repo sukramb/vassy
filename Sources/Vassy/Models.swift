@@ -11,6 +11,14 @@ enum Agent: String, CaseIterable {
 /// Where Vassy keeps its state: events, summaries, marks, config and the hook script.
 enum Paths {
     static let base = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".vassy")
+
+    /// Creates ~/.vassy and keeps it readable by its owner only: the summaries and the
+    /// backups of agent config files in it are private.
+    static func secure() {
+        let fm = FileManager.default
+        try? fm.createDirectory(at: base, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+        try? fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: base.path)
+    }
 }
 
 /// The optional ~/.vassy/config.json written by install.sh.
@@ -43,6 +51,15 @@ struct HookEvent: Codable {
 
     var agentKind: Agent { Agent(rawValue: agent ?? "") ?? .claude }
     var isWaiting: Bool { event == "Stop" || event == "Notification" || event == "PermissionRequest" }
+    /// The agent shows an approval dialog. Text typed into it would be read as dialog keys,
+    /// so Vassy sends nothing in this state and only offers to open the tab.
+    var needsPermission: Bool {
+        event == "PermissionRequest"
+            || (event == "Notification" && (notification ?? "").range(of: "permission", options: .caseInsensitive) != nil)
+    }
+    static func validId(_ id: String) -> Bool {
+        id.range(of: #"^[A-Za-z0-9_-]{8,80}\z"#, options: .regularExpression) != nil
+    }
 }
 
 /// Claude Code's own registry of live sessions (~/.claude/sessions/<pid>.json).

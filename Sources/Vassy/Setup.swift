@@ -39,7 +39,7 @@ enum Setup {
     static func refreshHookLink() {
         guard !isTranslocated, let binary = Bundle.main.executablePath else { return }
         let fm = FileManager.default
-        try? fm.createDirectory(at: Paths.base, withIntermediateDirectories: true)
+        Paths.secure()
         if (try? fm.destinationOfSymbolicLink(atPath: hookLink.path)) == binary { return }
         try? fm.removeItem(at: hookLink)
         try? fm.createSymbolicLink(atPath: hookLink.path, withDestinationPath: binary)
@@ -50,6 +50,7 @@ enum Setup {
     @discardableResult
     static func apply(agents: Set<Agent>) -> [String] {
         let fm = FileManager.default
+        Paths.secure()
         let backups = Paths.base.appendingPathComponent("backups")
         try? fm.createDirectory(at: backups, withIntermediateDirectories: true)
         refreshHookLink()
@@ -94,11 +95,15 @@ enum Setup {
                 try? fm.copyItem(at: file, to: backups.appendingPathComponent("\(agent.rawValue)-\(file.lastPathComponent).\(stamp)"))
             }
             root["hooks"] = hooks.isEmpty ? nil : hooks
+            // Written to the real file behind a symlink, keeping its permissions.
+            let target = file.resolvingSymlinksInPath()
+            let mode = (try? fm.attributesOfItem(atPath: target.path))?[.posixPermissions]
             guard let data = try? JSONSerialization.data(withJSONObject: root, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]),
-                  (try? (data + Data("\n".utf8)).write(to: file, options: .atomic)) != nil else {
+                  (try? (data + Data("\n".utf8)).write(to: target, options: .atomic)) != nil else {
                 report.append("\(title(agent)): could not write \(file.path)")
                 continue
             }
+            if let mode { try? fm.setAttributes([.posixPermissions: mode], ofItemAtPath: target.path) }
             report.append("\(title(agent)): hook \(wanted ? "registered" : "removed") in \(file.path)")
         }
 

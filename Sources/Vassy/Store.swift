@@ -37,6 +37,7 @@ final class Store: ObservableObject {
     private var toastTask: Task<Void, Never>?
 
     init() {
+        Paths.secure()
         try? fm.createDirectory(at: eventsDir, withIntermediateDirectories: true)
         try? fm.createDirectory(at: summariesDir, withIntermediateDirectories: true)
         for url in (try? fm.contentsOfDirectory(at: summariesDir, includingPropertiesForKeys: nil)) ?? []
@@ -67,6 +68,8 @@ final class Store: ObservableObject {
         where url.pathExtension == "json" {
             guard let d = try? Data(contentsOf: url), let ev = try? JSONDecoder().decode(HookEvent.self, from: d) else { continue }
             let sid = ev.sessionId
+            // The id becomes part of file paths, so it must be well-formed and match its file.
+            guard HookEvent.validId(sid), sid == url.deletingPathExtension().lastPathComponent else { continue }
             let reg = registry[sid]
             let recent = now - ev.at < 12 * 3_600_000
             let alive: Bool
@@ -79,7 +82,8 @@ final class Store: ObservableObject {
                 continue
             }
 
-            let tty = ev.tty ?? (reg?.pid ?? ev.pid).flatMap { pid in ttyCache[pid] ?? Terminal.ttyOf(pid: pid).map { ttyCache[pid] = $0; return $0 } }
+            let ttyOf = { (pid: Int32) in self.ttyCache[pid] ?? Terminal.ttyOf(pid: pid).map { self.ttyCache[pid] = $0; return $0 } }
+            let tty = reg.flatMap { ttyOf($0.pid) } ?? ev.tty ?? ev.pid.flatMap(ttyOf)
             let mark = marks[sid] ?? UserMark()
             let summary = summaries[sid]
             let waitingEvent = ev.isWaiting
@@ -132,7 +136,7 @@ final class Store: ObservableObject {
     /// Sessions that were already idle before the hook existed get an event file
     /// built from Claude Code's registry, so they show up without waiting for a new turn.
     private func seedFromRegistry(_ registry: [String: RegistryEntry]) {
-        for (sid, r) in registry where r.status == "idle" || r.status == "busy" {
+        for (sid, r) in registry where HookEvent.validId(sid) && (r.status == "idle" || r.status == "busy") {
             let file = eventsDir.appendingPathComponent(sid + ".json")
             guard !fm.fileExists(atPath: file.path), let transcript = findTranscript(sid) else { continue }
             let at = r.statusUpdatedAt ?? Date().timeIntervalSince1970 * 1000
@@ -200,15 +204,25 @@ final class Store: ObservableObject {
     // MARK: - Actions
 
     func send(_ text: String, to item: SessionItem) {
-        switch Terminal.send(text, tty: item.tty) {
+        guard !item.event.needsPermission else { show("Answer the permission request in the terminal."); return }
+        switch Terminal.send(text, tty: item.tty, agent: item.event.agentKind, pid: item.registry?.pid ?? item.event.pid) {
         case .success:
             update(item.id) { $0.sentAt = Date().timeIntervalSince1970 * 1000 }
             handledToday += 1
             show("Sent to \(item.title)")
         case .failure(let err):
             show(err.message)
+            log("send failed for \(item.id.prefix(8)) on \(item.tty ?? "no tty"): \(err.message)")
         }
         refresh()
+    }
+
+    /// A short local log of failures (never message contents), to make rare problems traceable.
+    private func log(_ line: String) {
+        let file = base.appendingPathComponent("vassy.log")
+        let stamp = ISO8601DateFormatter().string(from: Date())
+        let old = (try? Data(contentsOf: file)).map { $0.suffix(100_000) } ?? Data()
+        try? (old + Data("\(stamp) \(line)\n".utf8)).write(to: file, options: .atomic)
     }
 
     func open(_ item: SessionItem) {
