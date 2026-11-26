@@ -21,17 +21,22 @@ Website: <https://vassy.app>
 
 - macOS 15 or later, with Terminal.app
 - Claude Code and/or Codex CLI, signed in
-- Xcode Command Line Tools (Swift 6) and Node.js
 
 ## Install
+
+Download the latest `Vassy.zip` from the
+[releases page](https://github.com/sukramb/vassy/releases/latest), move `Vassy.app` into
+your Applications folder and open it. The app is signed and notarized. On first launch
+it asks which agents it should watch.
+
+Or build it from source (needs the Xcode Command Line Tools, Swift 6):
 
 ```sh
 git clone https://github.com/sukramb/vassy.git
 cd vassy && ./install.sh
 ```
 
-The installer asks which agents Vassy should watch, builds the app into
-`~/Applications`, and registers a small hook with each agent you picked:
+Either way, Vassy registers a small hook with each agent you picked:
 
 | Agent       | Config file changed       |
 | ----------- | ------------------------- |
@@ -41,14 +46,16 @@ The installer asks which agents Vassy should watch, builds the app into
 Each file is backed up to `~/.vassy/backups` first. Codex only runs hooks you have
 approved: start `codex`, type `/hooks` and trust the Vassy entries.
 
-Without questions: `./install.sh --agents claude,codex`.
-To remove the app and every hook entry: `./install.sh --uninstall`.
+You can change the selection later under gear menu › Agents…. From source, without
+questions: `./install.sh --agents claude,codex`. To remove every hook entry:
+`./install.sh --uninstall`, or `~/.vassy/hook --uninstall` for a downloaded app.
 
 ## How it works
 
-1. **Hook.** `hook/hook.js` runs when a session finishes a turn, asks for permission,
-   gets a new prompt or ends. It writes one small JSON file per session to
-   `~/.vassy/events` and prints nothing, so the agent is not affected.
+1. **Hook.** The agents call `~/.vassy/hook`, a link to the app's own binary, when a
+   session finishes a turn, asks for permission, gets a new prompt or ends. It writes
+   one small JSON file per session to `~/.vassy/events` and prints nothing, so the
+   agent is not affected.
 2. **Summary.** The app reads the tail of the session's transcript and asks a CLI you
    already have for a compact JSON summary: `claude -p` on the small model, or
    `codex exec` if only Codex is installed. The call runs with tools and MCP servers

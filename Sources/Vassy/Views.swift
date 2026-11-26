@@ -59,6 +59,7 @@ struct RootView: View {
                 Toggle("Launch at login", isOn: Binding(
                     get: { SMAppService.mainApp.status == .enabled },
                     set: { on in try? on ? SMAppService.mainApp.register() : SMAppService.mainApp.unregister() }))
+                Button("Agents…") { SetupWindow.show() }
                 Divider()
                 Button("Quit") { NSApp.terminate(nil) }
             } label: { Image(systemName: "gearshape") }

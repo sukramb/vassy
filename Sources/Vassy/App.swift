@@ -7,8 +7,16 @@ import UserNotifications
 @main
 enum Main {
     static func main() {
-        // Debug: Vassy --summarize <transcript.jsonl> [cwd] [claude|codex]
         let args = CommandLine.arguments
+        // Called by the agents: Vassy --hook <claude|codex>, event JSON on stdin.
+        if args.count >= 2, args[1] == "--hook" { Hook.run(agent: args.count > 2 ? args[2] : nil) }
+        // Vassy --setup claude,codex registers the hook with these agents; --uninstall removes it everywhere.
+        if args.count >= 2, args[1] == "--setup" || args[1] == "--uninstall" {
+            let names = args[1] == "--setup" && args.count > 2 ? args[2].split(separator: ",").map(String.init) : []
+            Setup.apply(agents: Set(names.compactMap(Agent.init(rawValue:)))).forEach { print("  " + $0) }
+            exit(0)
+        }
+        // Debug: Vassy --summarize <transcript.jsonl> [cwd] [claude|codex]
         if args.count >= 3, args[1] == "--summarize" {
             let ev = HookEvent(sessionId: "debug", cwd: args.count > 3 ? args[3] : nil, transcriptPath: args[2],
                                event: "Stop", at: Date().timeIntervalSince1970 * 1000,
@@ -28,16 +36,17 @@ enum Main {
             }
             exit(0)
         }
-        // Debug: Vassy --snapshot <out.png> [all] [dark]
+        // Debug: Vassy --snapshot <out.png> [all|setup] [dark]
         if args.count >= 3, args[1] == "--snapshot" {
             MainActor.assumeIsolated {
                 _ = NSApplication.shared
                 let store = Store()
                 RunLoop.main.run(until: Date().addingTimeInterval(1))
-                let view = RootView(store: store, initialTab: args.contains("all") ? .all : .queue)
-                let host = NSHostingView(rootView: view)
+                let setup = args.contains("setup")
+                let host = setup ? NSHostingView(rootView: AnyView(SetupView {}))
+                                 : NSHostingView(rootView: AnyView(RootView(store: store, initialTab: args.contains("all") ? .all : .queue)))
                 host.appearance = NSAppearance(named: args.contains("dark") ? .darkAqua : .aqua)
-                let win = NSWindow(contentRect: NSRect(x: -3000, y: 0, width: 468, height: 780),
+                let win = NSWindow(contentRect: NSRect(x: -3000, y: 0, width: setup ? 460 : 468, height: setup ? 420 : 780),
                                    styleMask: [.borderless], backing: .buffered, defer: false)
                 win.backgroundColor = args.contains("dark") ? NSColor(white: 0.16, alpha: 1) : NSColor(white: 0.93, alpha: 1)
                 win.appearance = host.appearance
@@ -102,6 +111,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUser
     private var hotKey: HotKey?
 
     func applicationDidFinishLaunching(_ note: Notification) {
+        Setup.refreshHookLink()
         store = Store()
         setUpStatusItem()
         setUpPanel()
@@ -116,6 +126,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUser
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        // First run: nothing is registered yet, so ask which agents to watch.
+        if Agent.allCases.allSatisfy({ !Setup.isRegistered($0) }) { SetupWindow.show() }
     }
 
     // MARK: Status item

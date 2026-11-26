@@ -92,7 +92,7 @@ enum TranscriptReader {
 enum Summarizer {
     enum Backend { case claude(String), codex(String) }
 
-    private static func find(_ name: String) -> String? {
+    static func find(_ name: String) -> String? {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return ["\(home)/.local/bin/\(name)", "/opt/homebrew/bin/\(name)", "/usr/local/bin/\(name)"]
             .first { FileManager.default.isExecutableFile(atPath: $0) }
