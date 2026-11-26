@@ -87,9 +87,9 @@ Vassy has no account and no analytics. A transcript is only ever handed to an ag
 that is already on your Mac (Claude Code, or Codex if that is the one you have), on the
 login you already use. All state lives in `~/.vassy`.
 
-The app's only request of its own is an update check: once a day it fetches
-`https://vassy.app/version.json`, without cookies or any identifier, and shows a link
-when a newer version exists. Switch it off under gear menu › Check for updates.
+The app's only request of its own is an update check: every few hours it fetches
+`https://vassy.app/version.json`, without cookies or any identifier, and sends one
+notification and shows a link when a newer version exists. Switch it off under gear menu › Check for updates.
 
 ## Configuration
 

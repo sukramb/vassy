@@ -273,7 +273,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUser
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        self.show()
+        if response.notification.request.identifier == Updates.notificationId {
+            NSWorkspace.shared.open(Updates.downloadPage)
+        } else {
+            self.show()
+        }
         completionHandler()
     }
 

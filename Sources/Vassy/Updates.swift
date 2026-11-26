@@ -1,6 +1,8 @@
 import AppKit
+import UserNotifications
 
-/// Looks once a day whether a newer Vassy is on vassy.app and, if so, offers the download.
+/// Looks every few hours whether a newer Vassy is on vassy.app. If so, it sends one
+/// notification per new version and shows an update link in the panel.
 /// It is the app's only network request: a GET for a small static file, without cookies or
 /// any identifier, and it can be switched off in the gear menu.
 @MainActor
@@ -9,6 +11,8 @@ final class Updates: ObservableObject {
     static let downloadPage = URL(string: "https://vassy.app/#install")!
     private static let feed = URL(string: "https://vassy.app/version.json")!
     private static let enabledKey = "checkForUpdates"
+    private static let notifiedKey = "updateNotifiedFor"
+    static let notificationId = "vassy-update"
 
     /// Version offered for download when it is newer than the running one.
     @Published private(set) var available: String?
@@ -27,7 +31,7 @@ final class Updates: ObservableObject {
 
     func start() {
         check()
-        timer = Timer.scheduledTimer(withTimeInterval: 24 * 3600, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 6 * 3600, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.check() }
         }
     }
@@ -46,7 +50,18 @@ final class Updates: ObservableObject {
                   latest.range(of: #"^[0-9]{1,4}(\.[0-9]{1,4}){0,3}\z"#, options: .regularExpression) != nil
             else { return }
             available = Self.isNewer(latest, than: Self.current) ? latest : nil
+            if available != nil { notifyOnce(latest) }
         }
+    }
+
+    /// One notification per new version; clicking it opens the download page.
+    private func notifyOnce(_ version: String) {
+        guard UserDefaults.standard.string(forKey: Self.notifiedKey) != version else { return }
+        UserDefaults.standard.set(version, forKey: Self.notifiedKey)
+        let content = UNMutableNotificationContent()
+        content.title = "Vassy \(version) is available"
+        content.body = "Click to open vassy.app and download the update."
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: Self.notificationId, content: content, trigger: nil))
     }
 
     static func isNewer(_ a: String, than b: String) -> Bool {
