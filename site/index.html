@@ -472,10 +472,10 @@ footer p { margin: 0; max-width: 44em; }
     <a href="#features">Features</a>
     <a href="#privacy">Privacy</a>
     <a href="#install">Install</a>
-    <a href="https://github.com/sukramb/vassy" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/sukramb/vassy" target="_blank" rel="noopener" data-track="GitHub" data-place="menubar">GitHub</a>
   </nav>
   <div class="status">
-    <a class="coffee" href="https://buymeacoffee.com/sukrambm" target="_blank" rel="noopener">
+    <a class="coffee" href="https://buymeacoffee.com/sukrambm" target="_blank" rel="noopener" data-track="Coffee" data-place="menubar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h12v5a5 5 0 01-5 5h-2a5 5 0 01-5-5V9z"/><path d="M17 10h1.5a2.5 2.5 0 010 5H17"/><path d="M8 3.5c0 1 1 1 1 2M12 3.5c0 1 1 1 1 2"/></svg>
       <span>Buy me a coffee</span>
     </a>
@@ -505,7 +505,7 @@ footer p { margin: 0; max-width: 44em; }
         <strong>one question and a recommendation</strong>, then types your answer into the right Terminal tab.
       </p>
       <div class="cta rise" style="--d:6">
-        <a class="btn primary" href="download/Vassy.zip" download>
+        <a class="btn primary" href="download/Vassy.zip" download data-track="Download" data-place="hero">
           Download for macOS
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v13M6 12l6 6 6-6"/></svg>
         </a>
@@ -626,7 +626,7 @@ UserPromptSubmit · SessionEnd
         <div class="art"><div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
         <h3>Say it or type it</h3>
         <p>The reply field has focus the moment the panel opens, so any dictation tool works. Talk, hit <kbd>⌘↵</kbd>, done.</p>
-        <a class="works" href="https://wisprflow.ai" target="_blank" rel="noopener">
+        <a class="works" href="https://wisprflow.ai" target="_blank" rel="noopener" data-track="Wispr Flow" data-place="features">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg>
           Works great with Wispr Flow
           <span aria-hidden="true">↗</span>
@@ -655,7 +655,7 @@ UserPromptSubmit · SessionEnd
       <h2 class="reveal">Your code goes <em>nowhere new.</em></h2>
     </div>
     <ul class="plist">
-      <li class="reveal"><span class="no">01</span><div><h3>No account, no analytics</h3><p>Vassy is a single local app without a backend. Its only request to us is a look at one small file every few hours to see whether a newer version exists, and you can switch that off.</p></div></li>
+      <li class="reveal"><span class="no">01</span><div><h3>No account, no tracking in the app</h3><p>Vassy is a single local app without a backend. Its only request to us is a look at one small file every few hours to see whether a newer version exists, and you can switch that off.</p></div></li>
       <li class="reveal"><span class="no">02</span><div><h3>Summaries run through your own agent</h3><p>The only place a transcript is sent is an agent CLI already on your Mac: Claude Code, or Codex if that is the one you have. It runs on the login you already use.</p></div></li>
       <li class="reveal"><span class="no">03</span><div><h3>Answers are checked before they are typed</h3><p>The summarizer treats your session as data, not instructions. Every ready-made answer shows its exact text; anything that looks like a command is dropped, and nothing is typed unless your agent is the program in that tab.</p></div></li>
       <li class="reveal"><span class="no">04</span><div><h3>Open source</h3><p>Every line is <a href="https://github.com/sukramb/vassy" target="_blank" rel="noopener">on GitHub</a> under the MIT license. Read what the hook and the summarizer do before you install.</p></div></li>
@@ -679,7 +679,7 @@ UserPromptSubmit · SessionEnd
     <div class="reveal" style="--d:1">
       <ol class="dl">
         <li><span class="no">1</span><div><h3>Download Vassy</h3><p>A small zip, under 1 MB, for Apple silicon and Intel Macs.</p>
-          <a class="btn primary" href="download/Vassy.zip" download>
+          <a class="btn primary" href="download/Vassy.zip" download data-track="Download" data-place="install">
             Download for macOS
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v13M6 12l6 6 6-6"/></svg>
           </a></div></li>
@@ -840,6 +840,12 @@ UserPromptSubmit · SessionEnd
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return;
     const a = queue[0].acts[Number(e.key) - 1];
     if (a) { e.preventDefault(); answer(a); }
+  });
+
+  // anonymous click counts (Vercel Web Analytics, no cookies): which button, and where on the page
+  addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('[data-track]');
+    if (a && window.va) window.va('event', { name: a.dataset.track, data: { place: a.dataset.place || '' } });
   });
 
   // reveal on scroll
