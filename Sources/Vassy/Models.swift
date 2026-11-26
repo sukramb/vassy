@@ -27,7 +27,7 @@ struct Config: Codable {
     }()
 }
 
-/// Written by hook/hook.js, one file per agent session.
+/// Written by the hook (Hook.swift), one file per agent session.
 struct HookEvent: Codable {
     var sessionId: String
     var cwd: String?
