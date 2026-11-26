@@ -36,11 +36,11 @@ struct RootView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(tab == .queue ? "Warteschlange" : "Alle Sessions").font(.system(size: 17, weight: .bold))
+                Text(tab == .queue ? "Queue" : "All sessions").font(.system(size: 17, weight: .bold))
                 Spacer()
                 Picker("", selection: $tab) {
                     Text("Queue").tag(Tab.queue)
-                    Text("Alle").tag(Tab.all)
+                    Text("All").tag(Tab.all)
                 }
                 .pickerStyle(.segmented).labelsHidden().frame(width: 150)
             }
@@ -52,18 +52,18 @@ struct RootView: View {
     private var footer: some View {
         HStack(spacing: 10) {
             let busy = store.running.count
-            Text(busy == 0 ? "Keine Session arbeitet gerade" : "Arbeiten gerade: \(busy)")
+            Text(busy == 0 ? "No session is working" : "Working right now: \(busy)")
             Spacer()
             Text("⌥⌘C").fontWeight(.semibold)
             Menu {
-                Toggle("Beim Login starten", isOn: Binding(
+                Toggle("Launch at login", isOn: Binding(
                     get: { SMAppService.mainApp.status == .enabled },
                     set: { on in try? on ? SMAppService.mainApp.register() : SMAppService.mainApp.unregister() }))
                 Divider()
-                Button("Beenden") { NSApp.terminate(nil) }
+                Button("Quit") { NSApp.terminate(nil) }
             } label: { Image(systemName: "gearshape") }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
-            .accessibilityLabel("Einstellungen")
+            .accessibilityLabel("Settings")
         }
         .font(.system(size: 12)).foregroundStyle(.secondary)
         .padding(.horizontal, 18).padding(.vertical, 10)
@@ -102,10 +102,10 @@ struct ProgressBar: View {
         let total = done + open
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(open == 0 ? (done == 0 ? "Nichts offen" : "Alle \(done) erledigt")
-                               : "\(done) von \(total) erledigt · noch \(open)")
+                Text(open == 0 ? (done == 0 ? "Nothing waiting" : "All \(done) done")
+                               : "\(done) of \(total) done · \(open) left")
                 Spacer()
-                Text("Älteste zuerst")
+                Text("Oldest first")
             }
             .font(.system(size: 12)).foregroundStyle(.secondary)
             HStack(spacing: 4) {
@@ -131,7 +131,7 @@ struct QueueView: View {
                                                 removal: .move(edge: .leading).combined(with: .opacity)))
                     let rest = Array(store.queue.dropFirst())
                     if !rest.isEmpty {
-                        SectionTitle(text: "Danach · \(rest.count)")
+                        SectionTitle(text: "Up next · \(rest.count)")
                         VStack(spacing: 4) {
                             ForEach(Array(rest.enumerated()), id: \.element.id) { idx, item in
                                 NextRow(item: item, position: idx + 2) { store.pullForward(item) }
@@ -182,7 +182,7 @@ struct KindBadge: View {
     let item: SessionItem
     var body: some View {
         let task = item.isTask
-        Text(task ? "Deine Aufgabe" : "Entscheidung")
+        Text(task ? "Your task" : "Decision")
             .font(.system(size: 11, weight: .semibold))
             .padding(.horizontal, 7).padding(.vertical, 2)
             .foregroundStyle(task ? Color.task : Color.waiting)
@@ -221,7 +221,7 @@ struct CurrentCard: View {
                 if !s.question.isEmpty || !s.recommendation.isEmpty {
                     QuestionBox(item: item, summary: s)
                 }
-                if item.summarizing { Label("Neue Antwort wird zusammengefasst …", systemImage: "arrow.triangle.2.circlepath")
+                if item.summarizing { Label("Summarizing the new reply …", systemImage: "arrow.triangle.2.circlepath")
                     .font(.system(size: 12)).foregroundStyle(.secondary) }
                 actionButtons(s)
             } else {
@@ -248,9 +248,9 @@ struct CurrentCard: View {
     @ViewBuilder private var pendingSummary: some View {
         if item.summaryFailed {
             HStack {
-                Label("Zusammenfassung fehlgeschlagen", systemImage: "exclamationmark.triangle")
+                Label("Summary failed", systemImage: "exclamationmark.triangle")
                 Spacer()
-                Button("Nochmal") { store.resummarize(item) }
+                Button("Retry") { store.resummarize(item) }
             }
             .font(.system(size: 13)).foregroundStyle(.secondary)
         } else {
@@ -277,7 +277,7 @@ struct CurrentCard: View {
                     } label: {
                         HStack(spacing: 7) {
                             if a.prod == true { Image(systemName: "arrow.up.circle.fill") }
-                            Text(confirming ? "Wirklich live bringen? Nochmal klicken" : (i == 0 ? "\(a.label)  ·  Empfehlung" : a.label))
+                            Text(confirming ? "Really ship this? Click again" : (i == 0 ? "\(a.label)  ·  Recommended" : a.label))
                             Spacer()
                             Text("⌘\(i + 1)").font(.system(size: 11, weight: .medium)).opacity(0.7)
                         }
@@ -293,7 +293,7 @@ struct CurrentCard: View {
             }
             Group {
                 if let h = hoverText {
-                    (Text("Sendet: ").fontWeight(.semibold) + Text("„\(h)“").font(.system(size: 11.5, design: .monospaced)))
+                    (Text("Sends: ").fontWeight(.semibold) + Text("“\(h)”").font(.system(size: 11.5, design: .monospaced)))
                 } else { Text(" ") }
             }
             .font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(2)
@@ -302,11 +302,11 @@ struct CurrentCard: View {
 
     private var replyField: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Eigene Antwort").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+            Text("Your own answer").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 8) {
                 ZStack(alignment: .topLeading) {
                     if draft.isEmpty {
-                        Text("Einsprechen oder tippen …").foregroundStyle(.secondary)
+                        Text("Dictate or type …").foregroundStyle(.secondary)
                             .padding(.leading, 5).padding(.top, 1).allowsHitTesting(false)
                     }
                     TextEditor(text: $draft)
@@ -316,7 +316,7 @@ struct CurrentCard: View {
                 }
                 .font(.system(size: 13.5))
                 HStack {
-                    Label("Feld ist aktiv, einfach lossprechen", systemImage: "mic")
+                    Label("Field is active, just start talking", systemImage: "mic")
                         .font(.system(size: 11.5)).foregroundStyle(.secondary)
                     Spacer()
                     Button {
@@ -325,7 +325,7 @@ struct CurrentCard: View {
                         store.send(text, to: item)
                         draft = ""
                     } label: {
-                        HStack(spacing: 8) { Text("Senden"); Text("⌘↵").font(.system(size: 11)).opacity(0.75) }
+                        HStack(spacing: 8) { Text("Send"); Text("⌘↵").font(.system(size: 11)).opacity(0.75) }
                             .font(.system(size: 13, weight: .semibold)).padding(.horizontal, 12).frame(height: 32)
                     }
                     .buttonStyle(ActionStyle(kind: draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .muted : .send))
@@ -341,11 +341,11 @@ struct CurrentCard: View {
 
     private var bottomRow: some View {
         HStack(spacing: 8) {
-            Button { store.snooze(item) } label: { KeyLabel(title: "Später", key: "⌘→") }
+            Button { store.snooze(item) } label: { KeyLabel(title: "Later", key: "⌘→") }
                 .keyboardShortcut(.rightArrow, modifiers: .command)
-            Button { store.open(item) } label: { KeyLabel(title: "Tab öffnen", key: "⌘O") }
+            Button { store.open(item) } label: { KeyLabel(title: "Open tab", key: "⌘O") }
                 .keyboardShortcut("o", modifiers: .command)
-            Button { store.dismiss(item) } label: { KeyLabel(title: "Ausblenden", key: "⌘D") }
+            Button { store.dismiss(item) } label: { KeyLabel(title: "Hide", key: "⌘D") }
                 .keyboardShortcut("d", modifiers: .command)
         }
         .buttonStyle(ActionStyle(kind: .secondary))
@@ -365,7 +365,7 @@ struct QuestionBox: View {
             }
             if !summary.recommendation.isEmpty {
                 Label {
-                    (Text("Empfehlung: ").fontWeight(.semibold).foregroundStyle(Color.good) + Text(summary.recommendation))
+                    (Text("Recommendation: ").fontWeight(.semibold).foregroundStyle(Color.good) + Text(summary.recommendation))
                         .font(.system(size: 13.5))
                 } icon: { Image(systemName: "lightbulb").foregroundStyle(Color.good) }
             }
@@ -456,7 +456,7 @@ struct NextRow: View {
                         .foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 4)
-                Text(waitedText(since: item.waitingDate).replacingOccurrences(of: "wartet ", with: ""))
+                Text(waitedText(since: item.waitingDate).replacingOccurrences(of: "waiting ", with: ""))
                     .font(.system(size: 11.5)).foregroundStyle(.secondary)
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
@@ -464,7 +464,7 @@ struct NextRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Vorziehen")
+        .help("Move to the front")
     }
 }
 
@@ -474,9 +474,9 @@ struct EmptyQueue: View {
         VStack(spacing: 10) {
             Image(systemName: "checkmark").font(.system(size: 24, weight: .bold)).foregroundStyle(Color.good)
                 .frame(width: 56, height: 56).background(Color.good.opacity(0.14), in: Circle())
-            Text("Alles abgearbeitet").font(.system(size: 18, weight: .bold))
-            Text(running > 0 ? "\(running) Session\(running == 1 ? "" : "s") arbeite\(running == 1 ? "t" : "n") noch. Sobald eine fertig ist oder eine Frage hat, landet sie hier."
-                             : "Sobald eine Session fertig ist oder eine Frage hat, landet sie hier.")
+            Text("All clear").font(.system(size: 18, weight: .bold))
+            Text(running > 0 ? "\(running) session\(running == 1 ? " is" : "s are") still working. As soon as one finishes or has a question, it shows up here."
+                             : "As soon as a session finishes or has a question, it shows up here.")
                 .font(.system(size: 13.5)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 300)
         }
         .frame(maxWidth: .infinity).padding(.top, 90)
@@ -493,26 +493,26 @@ struct OverviewView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 6) {
-                    FilterPill(label: "Alle", color: .secondary, on: filter == nil) { filter = nil }
+                    FilterPill(label: "All", color: .secondary, on: filter == nil) { filter = nil }
                     ForEach(projects, id: \.self) { p in
                         FilterPill(label: p.name, color: p.color, on: filter == p) { filter = p }
                     }
                 }
                 let q = store.queue.filter(match), r = store.running.filter(match), d = store.done.filter(match)
                 if !q.isEmpty {
-                    SectionTitle(text: "Braucht dich · \(q.count)", color: .waiting)
+                    SectionTitle(text: "Needs you · \(q.count)", color: .waiting)
                     ForEach(q) { OverviewRow(store: store, item: $0, style: .waiting) }
                 }
                 if !r.isEmpty {
-                    SectionTitle(text: "Läuft · \(r.count)")
+                    SectionTitle(text: "Running · \(r.count)")
                     ForEach(r) { OverviewRow(store: store, item: $0, style: .running) }
                 }
                 if !d.isEmpty {
-                    SectionTitle(text: "Fertig · \(d.count)")
+                    SectionTitle(text: "Done · \(d.count)")
                     ForEach(d) { OverviewRow(store: store, item: $0, style: .done) }
                 }
                 if q.isEmpty && r.isEmpty && d.isEmpty {
-                    Text("Keine Sessions gefunden.").foregroundStyle(.secondary).frame(maxWidth: .infinity).padding(.top, 60)
+                    Text("No sessions found.").foregroundStyle(.secondary).frame(maxWidth: .infinity).padding(.top, 60)
                 }
             }
             .padding(16).padding(.bottom, 30)
@@ -567,8 +567,8 @@ struct OverviewRow: View {
             }
             Spacer(minLength: 4)
             Button { store.open(item) } label: { Image(systemName: "arrow.up.forward.square") }
-                .buttonStyle(.plain).foregroundStyle(.secondary).help("Terminal-Tab öffnen")
-                .accessibilityLabel("Terminal-Tab öffnen")
+                .buttonStyle(.plain).foregroundStyle(.secondary).help("Open the Terminal tab")
+                .accessibilityLabel("Open the Terminal tab")
         }
         .padding(10)
         .background(style == .waiting ? Color.waiting.opacity(0.08) : Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 12))
@@ -577,7 +577,7 @@ struct OverviewRow: View {
     private var subtitle: String {
         switch style {
         case .waiting: return item.summary?.question ?? "Wird zusammengefasst …"
-        case .running: return item.summary.map { "Arbeitet · zuletzt: \($0.title)" } ?? "Arbeitet …"
+        case .running: return item.summary.map { "Working · last: \($0.title)" } ?? "Working …"
         case .done: return item.summary?.state ?? ""
         }
     }

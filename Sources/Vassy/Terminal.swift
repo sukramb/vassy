@@ -38,16 +38,16 @@ enum Terminal {
         if let err {
             let n = err[NSAppleScript.errorNumber] as? Int ?? 0
             return .failure(TerminalError(message: n == -1743
-                ? "Keine Berechtigung für Terminal. Systemeinstellungen › Datenschutz › Automation."
-                : "Terminal hat nicht geantwortet (\(n))."))
+                ? "Vassy may not control Terminal. Allow it in System Settings › Privacy & Security › Automation."
+                : "Terminal did not respond (\(n))."))
         }
-        return out?.stringValue == "ok" ? .success(()) : .failure(TerminalError(message: "Terminal-Tab nicht gefunden. Wurde er geschlossen?"))
+        return out?.stringValue == "ok" ? .success(()) : .failure(TerminalError(message: "Terminal tab not found. Was it closed?"))
     }
 
     static func send(_ text: String, tty: String?) -> Result<Void, TerminalError> {
-        guard let tty = validTTY(tty) else { return .failure(TerminalError(message: "Terminal-Tab der Session unbekannt.")) }
+        guard let tty = validTTY(tty) else { return .failure(TerminalError(message: "This session has no known Terminal tab.")) }
         let line = clean(text)
-        guard !line.isEmpty else { return .failure(TerminalError(message: "Leere Nachricht.")) }
+        guard !line.isEmpty else { return .failure(TerminalError(message: "The message is empty.")) }
         let typed = run(tty: tty, body: "do script \(appleScriptString(line)) in tab i of w")
         guard case .success = typed else { return typed }
         // Claude Code treats a fast burst of characters as a paste and swallows the
@@ -59,7 +59,7 @@ enum Terminal {
     }
 
     static func focus(tty: String?) -> Result<Void, TerminalError> {
-        guard let tty = validTTY(tty) else { return .failure(TerminalError(message: "Terminal-Tab der Session unbekannt.")) }
+        guard let tty = validTTY(tty) else { return .failure(TerminalError(message: "This session has no known Terminal tab.")) }
         return run(tty: tty, body: """
         set selected of tab i of w to true
                 set index of w to 1

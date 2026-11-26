@@ -191,7 +191,7 @@ final class Store: ObservableObject {
             if firstRun { continue }
             let c = UNMutableNotificationContent()
             c.title = "\(item.project.name) · \(s.title)"
-            c.body = s.question + (s.recommendation.isEmpty ? "" : "\nEmpfehlung: \(s.recommendation)")
+            c.body = s.question + (s.recommendation.isEmpty ? "" : "\nRecommendation: \(s.recommendation)")
             c.sound = .default
             UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: item.id + "-\(Int(based))", content: c, trigger: nil))
         }
@@ -204,7 +204,7 @@ final class Store: ObservableObject {
         case .success:
             update(item.id) { $0.sentAt = Date().timeIntervalSince1970 * 1000 }
             handledToday += 1
-            show("Gesendet an \(item.title)")
+            show("Sent to \(item.title)")
         case .failure(let err):
             show(err.message)
         }
@@ -217,14 +217,14 @@ final class Store: ObservableObject {
 
     func snooze(_ item: SessionItem) {
         update(item.id) { $0.snoozedAt = Date().timeIntervalSince1970 * 1000 }
-        show("Ans Ende verschoben")
+        show("Moved to the back of the queue")
         refresh()
     }
 
     func dismiss(_ item: SessionItem) {
         update(item.id) { $0.dismissedAt = Date().timeIntervalSince1970 * 1000 }
         handledToday += 1
-        show("Ausgeblendet, bis die Session sich wieder meldet")
+        show("Hidden until the session asks again")
         refresh()
     }
 

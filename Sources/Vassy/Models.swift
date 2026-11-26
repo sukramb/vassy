@@ -17,6 +17,7 @@ enum Paths {
 struct Config: Codable {
     var agents: [String]?
     var summarizer: String?    // "claude" | "codex"; default: whichever CLI is installed
+    var language: String?      // language of the summaries, e.g. "German"; default: the system language
     var codexModel: String?    // model for Codex summaries; default: the user's Codex default
 
     static let current: Config = {
@@ -104,7 +105,7 @@ struct ProjectRule: Codable {
 /// Project grouping. With a projects.json the user's own list is used; without one,
 /// sessions are grouped by the name the summarizer picks or by their folder name.
 enum Projects {
-    static let other = "Sonstiges"
+    static let other = "Other"
 
     static let rules: [ProjectRule] = {
         let url = Paths.base.appendingPathComponent("projects.json")
@@ -142,12 +143,12 @@ enum Projects {
 
     /// Lines for the summarizer prompt: what the projects are and what to put in "project".
     static var promptIntro: String {
-        if rules.isEmpty { return "Leite den Projektnamen aus Ordner und Inhalt des Verlaufs ab." }
+        if rules.isEmpty { return "Derive the project name from the folder and the content of the transcript." }
         let list = rules.map { r in "\"\(r.name)\"" + (r.hint.map { " (\($0))" } ?? "") }.joined(separator: ", ")
-        return "Projekte: \(list), sonst \"\(other)\"."
+        return "Projects: \(list), otherwise \"\(other)\"."
     }
     static var promptField: String {
-        rules.isEmpty ? "Kurzer Projektname, max. 20 Zeichen" : (rules.map(\.name) + [other]).joined(separator: "|")
+        rules.isEmpty ? "Short project name, max 20 characters" : (rules.map(\.name) + [other]).joined(separator: "|")
     }
 }
 
@@ -188,9 +189,9 @@ extension Color {
 
 func waitedText(since date: Date, now: Date = Date()) -> String {
     let m = Int(now.timeIntervalSince(date) / 60)
-    if m < 1 { return "gerade eben" }
-    if m < 60 { return "wartet \(m) min" }
+    if m < 1 { return "just now" }
+    if m < 60 { return "waiting \(m) min" }
     let h = m / 60
-    if h < 24 { return "wartet \(h) h" }
-    return "seit \(h / 24) T"
+    if h < 24 { return "waiting \(h) h" }
+    return "waiting \(h / 24) d"
 }
