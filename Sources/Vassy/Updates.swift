@@ -56,7 +56,9 @@ final class Updates: ObservableObject {
 
     /// One notification per new version; clicking it opens the download page.
     private func notifyOnce(_ version: String) {
-        guard UserDefaults.standard.string(forKey: Self.notifiedKey) != version else { return }
+        // Notifications need an app bundle; a bare binary (tests) has none.
+        guard Bundle.main.bundleIdentifier != nil,
+              UserDefaults.standard.string(forKey: Self.notifiedKey) != version else { return }
         UserDefaults.standard.set(version, forKey: Self.notifiedKey)
         let content = UNMutableNotificationContent()
         content.title = "Vassy \(version) is available"
