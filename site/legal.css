@@ -1,0 +1,25 @@
+@font-face { font-family: "Instrument Serif"; src: url("fonts/instrument-serif-400.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Geist"; src: url("fonts/geist-var.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono-var.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+:root { --paper: #F3EFE6; --ink: #17150F; --ink-2: #57524A; --ink-3: #8C867A; --line: rgba(23,21,15,.13); --wait: #B4460B; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 "Geist", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--wait); }
+:focus-visible { outline: 2px solid var(--wait); outline-offset: 3px; border-radius: 4px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+header a { text-decoration: none; color: var(--ink); }
+.brand { display: inline-flex; align-items: center; gap: 10px; font: 400 26px/1 "Instrument Serif", Georgia, serif; }
+.brand svg { width: 26px; height: 26px; }
+main { width: min(720px, 100% - 48px); margin: 0 auto; padding: 72px 0 96px; }
+.kicker { font: 12px "Geist Mono", ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 18px; }
+h1 { font: 400 clamp(44px, 8vw, 68px)/1 "Instrument Serif", Georgia, serif; letter-spacing: -.02em; margin: 0 0 14px; }
+.lede { color: var(--ink-2); margin: 0 0 40px; }
+h2 { font: 600 19px/1.3 "Geist", sans-serif; letter-spacing: -.01em; margin: 44px 0 10px; padding-top: 22px; border-top: 1px solid var(--line); }
+p, li, address { color: var(--ink-2); font-style: normal; }
+p, ul, address { margin: 0 0 14px; }
+ul { padding-left: 20px; }
+strong { color: var(--ink); font-weight: 600; }
+code { font: .88em "Geist Mono", ui-monospace, monospace; background: rgba(23,21,15,.07); padding: 1px 6px; border-radius: 5px; }
+footer { border-top: 1px solid var(--line); padding: 28px 24px 44px; font-size: 14px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center; }
+footer a { color: var(--ink-2); }
