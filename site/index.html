@@ -349,6 +349,11 @@ h1 span { display: block; }
 .f .art { flex: 1; display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; align-content: flex-start; margin-bottom: 26px; }
 .f h3 { font-family: var(--serif); font-size: 31px; line-height: 1.05; letter-spacing: -.01em; margin-bottom: 10px; }
 .f p { margin: 0; color: var(--ink-2); font-size: 16px; max-width: 34em; }
+.works { align-self: flex-start; margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px 7px 11px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.55); font: 600 13.5px var(--sans); color: var(--ink); text-decoration: none; transition: border-color .2s, background .2s, transform .2s; }
+.works:hover { border-color: var(--wait); transform: translateY(-1px); }
+.works svg { width: 15px; height: 15px; color: var(--wait); }
+.works span { color: var(--ink-3); }
+html[data-dark] .works { background: rgba(255,255,255,.07); }
 .keycap { font: 600 17px var(--mac); min-width: 54px; height: 50px; padding: 0 12px; display: grid; place-items: center; border-radius: 11px; background: #fff; border: 1px solid var(--line); box-shadow: 0 3px 0 rgba(23,21,15,.16); }
 .f.dark .keycap { background: #2A2822; border-color: #45423A; color: var(--paper); box-shadow: 0 3px 0 #000; }
 .pill { font: 600 13px var(--mac); padding: 7px 13px; border-radius: 999px; background: #fff; border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 7px; }
@@ -612,6 +617,11 @@ UserPromptSubmit · SessionEnd
         <div class="art"><div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
         <h3>Say it or type it</h3>
         <p>The reply field has focus the moment the panel opens, so any dictation tool works. Talk, hit <kbd>⌘↵</kbd>, done.</p>
+        <a class="works" href="https://wisprflow.ai" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg>
+          Works great with Wispr Flow
+          <span aria-hidden="true">↗</span>
+        </a>
       </article>
 
       <article class="f reveal" style="--d:2">
@@ -677,7 +687,7 @@ UserPromptSubmit · SessionEnd
   <div class="wrap">
     <span class="word">Vassy</span>
     <p>A product of Heartly Apps UG (haftungsbeschr&auml;nkt) &middot; <a href="https://www.heartly.io/imprint" rel="noopener">Imprint</a> &middot; <a href="https://buymeacoffee.com/sukrambm" target="_blank" rel="noopener">Buy me a coffee</a><br>
-    Independent, not affiliated with or endorsed by Anthropic or OpenAI. Claude, Claude Code and Codex are trademarks of their owners.</p>
+    Independent, not affiliated with or endorsed by Anthropic, OpenAI or Wispr. Claude, Claude Code, Codex and Wispr Flow are trademarks of their owners.</p>
   </div>
 </footer>
 
