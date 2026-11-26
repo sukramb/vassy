@@ -19,7 +19,7 @@ final class Store: ObservableObject {
 
     private let fm = FileManager.default
     private let home = FileManager.default.homeDirectoryForCurrentUser
-    private var base: URL { home.appendingPathComponent(".claude/claude-queue") }
+    private var base: URL { Paths.base }
     private var eventsDir: URL { base.appendingPathComponent("events") }
     private var summariesDir: URL { base.appendingPathComponent("summaries") }
     private var marksFile: URL { base.appendingPathComponent("marks.json") }
@@ -68,16 +68,21 @@ final class Store: ObservableObject {
             guard let d = try? Data(contentsOf: url), let ev = try? JSONDecoder().decode(HookEvent.self, from: d) else { continue }
             let sid = ev.sessionId
             let reg = registry[sid]
-            let alive = reg != nil || (!registryAvailable && now - ev.at < 12 * 3_600_000)
+            let recent = now - ev.at < 12 * 3_600_000
+            let alive: Bool
+            switch ev.agentKind {
+            case .claude: alive = reg != nil || (!registryAvailable && recent)
+            case .codex: alive = ev.pid.map { kill($0, 0) == 0 } ?? recent
+            }
             if ev.ended == true || !alive {
                 if now - ev.at > 3 * 86_400_000 { cleanup(sid) }
                 continue
             }
 
-            let tty = ev.tty ?? reg.flatMap { r in ttyCache[r.pid] ?? Terminal.ttyOf(pid: r.pid).map { ttyCache[r.pid] = $0; return $0 } }
+            let tty = ev.tty ?? (reg?.pid ?? ev.pid).flatMap { pid in ttyCache[pid] ?? Terminal.ttyOf(pid: pid).map { ttyCache[pid] = $0; return $0 } }
             let mark = marks[sid] ?? UserMark()
             let summary = summaries[sid]
-            let waitingEvent = ev.event == "Stop" || ev.event == "Notification"
+            let waitingEvent = ev.isWaiting
             let since = ev.waitingSince ?? ev.at
 
             var phase: Phase
@@ -102,6 +107,9 @@ final class Store: ObservableObject {
                                     sortKey: sortKey))
         }
 
+        if Set(next.map { $0.event.agentKind }).count > 1 {
+            for i in next.indices { next[i].showAgent = true }
+        }
         notifyNewcomers(next)
         if Calendar.current.startOfDay(for: Date()) != handledDay {
             handledDay = Calendar.current.startOfDay(for: Date()); handledToday = 0

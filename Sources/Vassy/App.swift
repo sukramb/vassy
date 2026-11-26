@@ -7,11 +7,12 @@ import UserNotifications
 @main
 enum Main {
     static func main() {
-        // Debug: Vassy --summarize <transcript.jsonl> [cwd]
+        // Debug: Vassy --summarize <transcript.jsonl> [cwd] [claude|codex]
         let args = CommandLine.arguments
         if args.count >= 3, args[1] == "--summarize" {
             let ev = HookEvent(sessionId: "debug", cwd: args.count > 3 ? args[3] : nil, transcriptPath: args[2],
-                               event: "Stop", at: Date().timeIntervalSince1970 * 1000)
+                               event: "Stop", at: Date().timeIntervalSince1970 * 1000,
+                               agent: args.count > 4 ? args[4] : nil)
             let start = Date()
             if let s = Summarizer.run(event: ev), let d = try? JSONEncoder().encode(s) {
                 print(String(decoding: d, as: UTF8.self))

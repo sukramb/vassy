@@ -1,7 +1,32 @@
 import Foundation
 import SwiftUI
 
-/// Written by hook/hook.js, one file per Claude Code session.
+/// A coding agent Vassy can watch. Each one has its own hook events, transcript
+/// format and way of telling whether a session is still alive.
+enum Agent: String, CaseIterable {
+    case claude, codex
+    var name: String { self == .claude ? "Claude" : "Codex" }
+}
+
+/// Where Vassy keeps its state: events, summaries, marks, config and the hook script.
+enum Paths {
+    static let base = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".vassy")
+}
+
+/// The optional ~/.vassy/config.json written by install.sh.
+struct Config: Codable {
+    var agents: [String]?
+    var summarizer: String?    // "claude" | "codex"; default: whichever CLI is installed
+    var codexModel: String?    // model for Codex summaries; default: the user's Codex default
+
+    static let current: Config = {
+        guard let d = try? Data(contentsOf: Paths.base.appendingPathComponent("config.json")),
+              let c = try? JSONDecoder().decode(Config.self, from: d) else { return Config() }
+        return c
+    }()
+}
+
+/// Written by hook/hook.js, one file per agent session.
 struct HookEvent: Codable {
     var sessionId: String
     var cwd: String?
@@ -12,6 +37,11 @@ struct HookEvent: Codable {
     var notification: String?
     var ended: Bool?
     var tty: String?
+    var agent: String?        // missing in files written before multi-agent support
+    var pid: Int32?           // the agent process, used as liveness check where there is no registry
+
+    var agentKind: Agent { Agent(rawValue: agent ?? "") ?? .claude }
+    var isWaiting: Bool { event == "Stop" || event == "Notification" || event == "PermissionRequest" }
 }
 
 /// Claude Code's own registry of live sessions (~/.claude/sessions/<pid>.json).
@@ -63,7 +93,7 @@ struct Project: Hashable {
     var color: Color { Projects.color(for: name) }
 }
 
-/// One entry of the optional ~/.claude/claude-queue/projects.json:
+/// One entry of the optional ~/.vassy/projects.json:
 /// [{"name": "My App", "hint": "what it is, for the summarizer", "match": ["folder-keyword"]}]
 struct ProjectRule: Codable {
     var name: String
@@ -77,7 +107,7 @@ enum Projects {
     static let other = "Sonstiges"
 
     static let rules: [ProjectRule] = {
-        let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/claude-queue/projects.json")
+        let url = Paths.base.appendingPathComponent("projects.json")
         guard let d = try? Data(contentsOf: url), let r = try? JSONDecoder().decode([ProjectRule].self, from: d) else { return [] }
         return r.filter { !$0.name.isEmpty }
     }()
@@ -131,6 +161,7 @@ struct SessionItem: Identifiable {
     var summarizing: Bool
     var summaryFailed: Bool
     var sortKey: Double
+    var showAgent = false     // set when sessions of more than one agent are listed
 
     var project: Project { Projects.resolve(summary: summary?.project, cwd: event.cwd) }
     var title: String {

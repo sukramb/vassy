@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Baut die Menüleisten-App und legt sie nach ~/Applications/Vassy.app
+# Builds the menu bar app into ~/Applications/Vassy.app
 set -euo pipefail
 HERE="${0:A:h}"
 cd "$HERE"
@@ -27,4 +27,4 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </dict></plist>
 PLIST
 codesign --force --sign - "$APP" >/dev/null
-echo "Fertig: $APP"
+echo "Done: $APP"

@@ -163,7 +163,18 @@ struct ProjectChip: View {
             Circle().fill(item.project.color).frame(width: 8, height: 8)
             Text(item.project.name.uppercased()).font(.system(size: 11, weight: .bold)).tracking(0.6)
                 .foregroundStyle(item.project.color)
+            if item.showAgent { AgentTag(agent: item.event.agentKind) }
         }
+    }
+}
+
+/// Names the agent a session belongs to; only shown when several agents are in use.
+struct AgentTag: View {
+    let agent: Agent
+    var body: some View {
+        Text(agent.name).font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.secondary)
+            .padding(.horizontal, 6).padding(.vertical, 1.5)
+            .background(Color.primary.opacity(0.07), in: Capsule())
     }
 }
 
@@ -295,7 +306,7 @@ struct CurrentCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ZStack(alignment: .topLeading) {
                     if draft.isEmpty {
-                        Text("Einsprechen mit Wispr Flow oder tippen …").foregroundStyle(.secondary)
+                        Text("Einsprechen oder tippen …").foregroundStyle(.secondary)
                             .padding(.leading, 5).padding(.top, 1).allowsHitTesting(false)
                     }
                     TextEditor(text: $draft)
@@ -438,6 +449,7 @@ struct NextRow: View {
                     HStack(spacing: 6) {
                         Text(item.project.name.uppercased()).font(.system(size: 10.5, weight: .bold))
                             .foregroundStyle(item.project.color)
+                        if item.showAgent { AgentTag(agent: item.event.agentKind) }
                         Text(item.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                     }
                     Text(item.summary?.question ?? "Wird zusammengefasst …").font(.system(size: 12))
@@ -464,7 +476,7 @@ struct EmptyQueue: View {
                 .frame(width: 56, height: 56).background(Color.good.opacity(0.14), in: Circle())
             Text("Alles abgearbeitet").font(.system(size: 18, weight: .bold))
             Text(running > 0 ? "\(running) Session\(running == 1 ? "" : "s") arbeite\(running == 1 ? "t" : "n") noch. Sobald eine fertig ist oder eine Frage hat, landet sie hier."
-                             : "Sobald eine Claude-Session fertig ist oder eine Frage hat, landet sie hier.")
+                             : "Sobald eine Session fertig ist oder eine Frage hat, landet sie hier.")
                 .font(.system(size: 13.5)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 300)
         }
         .frame(maxWidth: .infinity).padding(.top, 90)
@@ -547,6 +559,7 @@ struct OverviewRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(item.project.name.uppercased()).font(.system(size: 10.5, weight: .bold)).foregroundStyle(item.project.color)
+                    if item.showAgent { AgentTag(agent: item.event.agentKind) }
                     Text(item.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                     if item.summary?.live == true { LiveBadge() }
                 }
