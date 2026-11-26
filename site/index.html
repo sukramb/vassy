@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vassy — a queue for your Claude Code sessions</title>
-<meta name="description" content="Vassy is a small macOS menu bar app. It finds every Claude Code session that is waiting on you, boils it down to one question and a recommendation, and types your answer into the right Terminal tab.">
-<meta property="og:title" content="Vassy — a queue for your Claude Code sessions">
-<meta property="og:description" content="Every Claude Code session that is stuck on you, as one question with a recommendation. Answer with one key.">
+<title>Vassy — a queue for your Claude Code and Codex sessions</title>
+<meta name="description" content="Vassy is a small macOS menu bar app. It finds every Claude Code and Codex session that is waiting on you, boils it down to one question and a recommendation, and types your answer into the right Terminal tab.">
+<meta property="og:title" content="Vassy — a queue for your Claude Code and Codex sessions">
+<meta property="og:description" content="Every Claude Code or Codex session that is stuck on you, as one question with a recommendation. Answer with one key.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://vassy.app/">
 <meta property="og:site_name" content="Vassy">
@@ -243,6 +243,8 @@ h1 span { display: block; }
 .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .tag { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+.tag.agent { background: rgba(23,21,15,.07); color: var(--p-sub); font-size: 10.5px; padding: 1.5px 7px; border-radius: 999px; white-space: nowrap; }
+html[data-dark] .tag.agent { background: rgba(255,255,255,.1); }
 .tag.task { background: rgba(29,78,216,.13); color: var(--task-ui); }
 .tag.live { background: rgba(21,128,61,.13); color: var(--good); font-weight: 700; font-size: 10.5px; letter-spacing: .04em; display: inline-flex; align-items: center; gap: 4px; }
 .tag.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -280,7 +282,7 @@ h1 span { display: block; }
 .minor small { font-weight: 500; opacity: .6; margin-left: 4px; font-size: 11px; }
 .next-h { font-size: 11px; font-weight: 700; letter-spacing: .1em; margin: 16px 5px 7px; text-transform: uppercase; }
 .next { display: grid; gap: 5px; }
-.nrow { display: grid; grid-template-columns: 22px auto 1fr auto; gap: 8px; align-items: center; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.34); border-radius: 10px; padding: 7px 10px; font-size: 13px; animation: cardIn .35s ease both; }
+.nrow { display: grid; grid-template-columns: 22px auto auto 1fr auto; gap: 8px; align-items: center; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.34); border-radius: 10px; padding: 7px 10px; font-size: 13px; animation: cardIn .35s ease both; }
 .nrow i { font-style: normal; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,.08); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--p-sub); }
 .nrow .chip::before { display: none; }
 .nrow .chip { font-size: 10.5px; }
@@ -485,14 +487,14 @@ footer p { margin: 0; max-width: 44em; }
 <section class="hero">
   <div class="wrap">
     <div class="hero-copy">
-      <p class="kicker rise">A menu bar app for Claude Code</p>
+      <p class="kicker rise">A menu bar app for Claude Code &amp; Codex</p>
       <h1>
         <span class="rise" style="--d:1">Four sessions</span>
         <span class="rise" style="--d:2">are waiting on you.</span>
         <span class="rise" style="--d:3"><em>Clear them in a minute.</em></span>
       </h1>
       <p class="lede rise" style="--d:5">
-        Vassy sits in your Mac&rsquo;s menu bar and watches every Claude Code session you have open.
+        Vassy sits in your Mac&rsquo;s menu bar and watches every Claude Code and Codex session you have open.
         When one stops and needs you, it boils the whole scrollback down to
         <strong>one question and a recommendation</strong>, then types your answer into the right Terminal tab.
       </p>
@@ -536,10 +538,10 @@ footer p { margin: 0; max-width: 44em; }
       <div class="termbar">
         <div class="dots"><i></i><i></i><i></i></div>
         <div class="ttab on"><b></b>claude · storefront</div>
-        <div class="ttab"><b></b>claude · atlas-api</div>
+        <div class="ttab"><b></b>codex · atlas-api</div>
         <div class="ttab"><b></b>claude · ledger</div>
         <div class="ttab busy"><b></b>claude · docs</div>
-        <div class="ttab"><b></b>claude · storefront</div>
+        <div class="ttab"><b></b>codex · storefront</div>
       </div>
 <div class="termbody"><span class="dim">  … 412 lines above …</span>
   The backfill ran clean on staging: 48,112 rows updated, 0 skipped.
@@ -561,16 +563,17 @@ footer p { margin: 0; max-width: 44em; }
       <div class="step reveal">
         <div class="n">1</div>
         <h3>A hook notices the stop</h3>
-        <p>Vassy registers a tiny Claude Code hook. Whenever a session finishes a turn or asks for permission, the hook writes one small file. Nothing polls, nothing scrapes your screen.</p>
-<pre><span class="dim"># ~/.claude/settings.json</span>
+        <p>Vassy registers a tiny hook with Claude Code and Codex. Whenever a session finishes a turn or asks for permission, the hook writes one small file. Nothing polls, nothing scrapes your screen.</p>
+<pre><span class="dim"># ~/.claude/settings.json
+# ~/.codex/hooks.json</span>
 Stop · Notification
 UserPromptSubmit · SessionEnd
   <span class="o">→</span> ~/.vassy/hook</pre>
       </div>
       <div class="step reveal" style="--d:1">
         <div class="n">2</div>
-        <h3>Your own Claude sums it up</h3>
-        <p>The app hands the tail of the transcript to the <code style="font-family:var(--mono);font-size:.88em">claude</code> CLI you already have, on the small fast model. Back comes a title, the open question, a recommendation and up to three ready-made answers.</p>
+        <h3>Your own agent sums it up</h3>
+        <p>The app hands the tail of the transcript to the <code style="font-family:var(--mono);font-size:.88em">claude</code> or <code style="font-family:var(--mono);font-size:.88em">codex</code> CLI you already have. Back comes a title, the open question, a recommendation and up to three ready-made answers.</p>
 <pre>claude -p --model haiku
   <span class="dim">--tools "" --strict-mcp-config</span>
   <span class="g">→</span> { "question": "…", "actions": […] }</pre>
@@ -581,7 +584,7 @@ UserPromptSubmit · SessionEnd
         <p>Press a key. Vassy finds the Terminal tab that session lives in, types your reply and hits Return. You never switch windows unless you want to.</p>
 <pre><span class="dim">you</span>      ⌘1
 <span class="dim">vassy</span>    <span class="o">→</span> Terminal · ttys004
-<span class="dim">claude</span>   <span class="g">working…</span></pre>
+<span class="dim">agent</span>    <span class="g">working…</span></pre>
       </div>
     </div>
   </div>
@@ -602,7 +605,7 @@ UserPromptSubmit · SessionEnd
       <article class="f reveal" style="--d:1">
         <div class="art"><p class="quote">&ldquo;Fix it. <b>It&rsquo;s a six-line change</b> in the expiry check.&rdquo;</p></div>
         <h3>A recommendation, not a recap</h3>
-        <p>You get where things stand, the one thing Claude needs, and what to do about it.</p>
+        <p>You get where things stand, the one thing the agent needs, and what to do about it.</p>
       </article>
 
       <article class="f warm reveal">
@@ -647,7 +650,7 @@ UserPromptSubmit · SessionEnd
     </div>
     <ul class="plist">
       <li class="reveal"><span class="no">01</span><div><h3>No server, no account, no analytics</h3><p>Vassy is a single local app. It has no backend and never phones home.</p></div></li>
-      <li class="reveal"><span class="no">02</span><div><h3>Summaries run through your Claude Code</h3><p>The only place a transcript is sent is the Claude Code CLI that produced it, on the login you already use.</p></div></li>
+      <li class="reveal"><span class="no">02</span><div><h3>Summaries run through your own agent</h3><p>The only place a transcript is sent is an agent CLI already on your Mac: Claude Code, or Codex if that is the one you have. It runs on the login you already use.</p></div></li>
       <li class="reveal"><span class="no">03</span><div><h3>The summarizer can read, nothing else</h3><p>It runs with tools and MCP servers switched off, and treats the transcript as data rather than instructions.</p></div></li>
       <li class="reveal"><span class="no">04</span><div><h3>Everything stays in one folder</h3><p>Queue state lives in <code>~/.vassy</code>. Delete the folder and it is gone.</p></div></li>
     </ul>
@@ -662,8 +665,8 @@ UserPromptSubmit · SessionEnd
       <p class="reveal">Vassy is free. It is signed and notarized by Apple, so it opens like any other Mac app.</p>
       <ul class="needs reveal">
         <li>macOS 15 or later, with Terminal.app</li>
-        <li>Claude Code, signed in</li>
-        <li>Codex CLI works too; that support is new and still in beta</li>
+        <li>Claude Code or Codex CLI, signed in</li>
+        <li>Codex support is new and still in beta</li>
       </ul>
     </div>
     <div class="reveal" style="--d:1">
@@ -701,7 +704,7 @@ UserPromptSubmit · SessionEnd
   };
   const COLORS = { Storefront: 'var(--c1)', 'Atlas API': 'var(--c2)', Ledger: 'var(--c3)' };
   const DEMO = [
-    { project: 'Storefront', wait: 'waiting 42 min', tty: 'ttys004',
+    { project: 'Storefront', agent: 'Claude', wait: 'waiting 42 min', tty: 'ttys004',
       title: 'Tax region migration is ready',
       ctx: 'Adds the tax_region column and backfills 48k orders. It ran clean on staging; production is untouched.',
       q: 'Run the migration on production now?',
@@ -709,7 +712,7 @@ UserPromptSubmit · SessionEnd
       acts: [
         { label: 'Run on production', prod: true, text: 'Yes, run the migration on production and report the row counts.' },
         { label: 'Staging once more', text: 'Run it on staging one more time and show me the diff first.' } ] },
-    { project: 'Atlas API', wait: 'waiting 27 min', tty: 'ttys007',
+    { project: 'Atlas API', agent: 'Codex', wait: 'waiting 27 min', tty: 'ttys007',
       title: 'Flaky refresh-token test',
       ctx: 'test_refresh_token fails one run in five. The cause is a clock race in the token expiry check.',
       q: 'Fix the race, or mark the test as flaky and move on?',
@@ -717,13 +720,13 @@ UserPromptSubmit · SessionEnd
       acts: [
         { label: 'Fix the race', text: 'Fix the race in the expiry check and run the test 50 times to confirm.' },
         { label: 'Mark as flaky', text: 'Mark the test as flaky for now and open an issue with what you found.' } ] },
-    { project: 'Ledger', wait: 'waiting 19 min', tty: 'ttys002', task: true, live: true,
+    { project: 'Ledger', agent: 'Claude', wait: 'waiting 19 min', tty: 'ttys002', task: true, live: true,
       title: 'Onboarding video for the store listing',
       ctx: 'The new onboarding flow is live. The store listing still needs a screen recording of it.',
       q: 'Your task: record the onboarding flow on a real device and drop the file in /assets.',
       rec: 'Use the 6.9-inch profile so the sizes match the listing.',
       acts: [ { label: 'Video recorded', text: 'The video is recorded and in /assets. Please continue with the listing.' } ] },
-    { project: 'Storefront', wait: 'waiting 6 min', tty: 'ttys009',
+    { project: 'Storefront', agent: 'Codex', wait: 'waiting 6 min', tty: 'ttys009',
       title: 'Headline for the pricing page',
       ctx: 'Two headline drafts for the pricing page are ready. Everything else on the page is done.',
       q: 'Ship headline A or headline B?',
@@ -761,7 +764,7 @@ UserPromptSubmit · SessionEnd
     }
     const s = queue[0];
     const card = el('div', 'card in');
-    const top = el('div', 'c-top'); top.append(chip(s.project));
+    const top = el('div', 'c-top'); top.append(chip(s.project), el('span', 'tag agent', s.agent));
     if (s.task) top.append(el('span', 'tag task', 'Your task'));
     if (s.live) top.append(el('span', 'tag live', 'LIVE'));
     top.append(el('span', 'c-wait', s.wait));
@@ -798,7 +801,7 @@ UserPromptSubmit · SessionEnd
       const list = el('div', 'next');
       queue.slice(1).forEach((n, i) => {
         const row = el('div', 'nrow'); row.style.animationDelay = (80 + i * 60) + 'ms';
-        row.append(el('i', null, String(i + 2)), chip(n.project), el('strong', null, n.title), el('time', null, n.wait.replace('waiting ', '')));
+        row.append(el('i', null, String(i + 2)), chip(n.project), el('span', 'tag agent', n.agent), el('strong', null, n.title), el('time', null, n.wait.replace('waiting ', '')));
         list.append(row);
       });
       slot.append(list);
