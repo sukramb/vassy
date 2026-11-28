@@ -6,6 +6,7 @@ enum Tab { case queue, all }
 struct RootView: View {
     @ObservedObject var store: Store
     @ObservedObject private var updates = Updates.shared
+    @ObservedObject private var support = Support.shared
     @State private var tab: Tab
 
     init(store: Store, initialTab: Tab = .queue) {
@@ -32,6 +33,7 @@ struct RootView: View {
         .modifier(GlassBackground())
         .animation(.snappy(duration: 0.25), value: store.queue.first?.id)
         .animation(.easeOut(duration: 0.2), value: store.toast)
+        .animation(.easeOut(duration: 0.2), value: support.nudgeVisible)
     }
 
     private var header: some View {
@@ -46,6 +48,7 @@ struct RootView: View {
                 .pickerStyle(.segmented).labelsHidden().frame(width: 150)
             }
             if tab == .queue { ProgressBar(done: store.handledToday, open: store.queue.count) }
+            if support.nudgeVisible { SupportNudge(support: support) }
         }
         .padding(.horizontal, 18).padding(.top, 16).padding(.bottom, 12)
     }
@@ -67,6 +70,7 @@ struct RootView: View {
                     set: { on in try? on ? SMAppService.mainApp.register() : SMAppService.mainApp.unregister() }))
                 Toggle("Check for updates", isOn: Binding(get: { updates.enabled }, set: { updates.enabled = $0 }))
                 Button("Agents…") { SetupWindow.show() }
+                Button("Buy me a coffee") { NSWorkspace.shared.open(Support.link) }
                 Text("Vassy \(Updates.current)")
                 Divider()
                 Button("Quit") { NSApp.terminate(nil) }

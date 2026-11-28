@@ -2,6 +2,8 @@
 
 A queue for your coding-agent sessions, in the macOS menu bar.
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/sukrambm)
+
 When you run several Claude Code or Codex sessions in parallel, each one eventually
 stops and waits for you. Vassy notices, boils the session down to one question and a
 recommendation, and types your answer into the right Terminal tab.
@@ -128,11 +130,16 @@ summarizer assign sessions that run elsewhere.
 
 ```sh
 ./build.sh                 # build and install for this Mac (ad-hoc signed)
-swift build && "$(swift build --show-bin-path)/Vassy" --selftest   # checks the safety guards
+swift build && "$(swift build --show-bin-path)/Vassy" --selftest   # safety guards and the support nudge
 scripts/release.sh         # signed, notarized universal build in dist/
 ```
 
 The website is the static page in `site/`.
+
+## Support
+
+Vassy is free and open source. A coffee helps keep it maintained:
+[buymeacoffee.com/sukrambm](https://buymeacoffee.com/sukrambm).
 
 ## License
 
