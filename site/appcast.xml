@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Vassy</title>
+    <link>https://vassy.app</link>
+    <item>
+      <title>Vassy 1.1.0</title>
+      <pubDate>Sat, 28 Nov 2026 12:32:54 +0000</pubDate>
+      <sparkle:version>1.1.0</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://www.vassy.app/download/Vassy.zip" type="application/octet-stream" sparkle:edSignature="em72bZq91J92l0SraHVUtBpn18myNv/oQtqvqdQfqi+X12sGmaYurFbwtOASXNHL7V2EsdwbsZTP97y84IcPAA==" length="2577356" />
+    </item>
+  </channel>
+</rss>
