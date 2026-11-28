@@ -18,7 +18,8 @@ enum Main {
             exit(0)
         }
         #if DEBUG
-        // Debug: Vassy --selftest checks the guards that keep untrusted text out of the terminal.
+        // Debug: Vassy --selftest checks the guards that keep untrusted text out of the terminal,
+        // and when the support nudge is allowed to appear.
         if args.count >= 2, args[1] == "--selftest" {
             func act(_ text: String, prod: Bool? = false) -> SessionAction? {
                 Summarizer.safeAction(SessionAction(label: "Continue", text: text, prod: prod))
@@ -47,6 +48,10 @@ enum Main {
                 ("claude transcript is one", TranscriptReader.isTranscript(NSHomeDirectory() + "/.claude/projects/p/abc.jsonl")),
                 ("newer version", Updates.isNewer("1.0.2", than: "1.0.1") && Updates.isNewer("1.1", than: "1.0.9")),
                 ("same or older version", !Updates.isNewer("1.0.1", than: "1.0.1") && !Updates.isNewer("1.0", than: "1.0.1")),
+                ("nudge hidden below 50", !Support.shouldNudge(answered: 49, nudgeClosed: false)),
+                ("nudge shown at 50", Support.shouldNudge(answered: 50, nudgeClosed: false)),
+                ("nudge shown above 50", Support.shouldNudge(answered: 75, nudgeClosed: false)),
+                ("closed nudge stays hidden", !Support.shouldNudge(answered: 50, nudgeClosed: true) && !Support.shouldNudge(answered: 75, nudgeClosed: true)),
                 ("bad tty is refused", !Terminal.agentInForeground(tty: "/dev/ttys001\n", agent: .claude)),
                 ("no agent on an unused tty", !Terminal.agentInForeground(tty: "/dev/ttys9999", agent: .codex)),
                 ("claude found in every tab that runs it", {
@@ -260,6 +265,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUser
         let y = b.minY - size.height - 6
         panel.setFrameOrigin(NSPoint(x: x, y: max(y, vf.minY + 8)))
         store.refresh()
+        Support.shared.refresh()
         NSApp.activate()
         panel.makeKeyAndOrderFront(nil)
         store.focusTick += 1

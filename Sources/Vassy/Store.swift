@@ -209,6 +209,7 @@ final class Store: ObservableObject {
         case .success:
             update(item.id) { $0.sentAt = Date().timeIntervalSince1970 * 1000 }
             handledToday += 1
+            Support.shared.recordSend()
             show("Sent to \(item.title)")
         case .failure(let err):
             show(err.message)
