@@ -63,6 +63,11 @@ struct RootView: View {
                     .help("Downloads the new version and restarts Vassy")
             }
             Spacer()
+            Button { NSWorkspace.shared.open(Support.link) } label: {
+                Text("\(Image(systemName: "cup.and.saucer.fill")) Buy me a coffee").contentShape(Rectangle())
+            }
+            .buttonStyle(.plain).foregroundStyle(.secondary)
+            .help("Vassy is free. Opens buymeacoffee.com")
             Text("⌥⌘C").fontWeight(.semibold)
             Menu {
                 Toggle("Launch at login", isOn: Binding(
@@ -71,7 +76,6 @@ struct RootView: View {
                 Toggle("Update automatically", isOn: Binding(get: { updates.enabled }, set: { updates.enabled = $0 }))
                 Button("Check for updates…") { updates.check() }
                 Button("Agents…") { SetupWindow.show() }
-                Button("Buy me a coffee") { NSWorkspace.shared.open(Support.link) }
                 Text("Vassy \(Updates.current)")
                 Divider()
                 Button("Quit") { NSApp.terminate(nil) }

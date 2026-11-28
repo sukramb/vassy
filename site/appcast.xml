@@ -4,12 +4,12 @@
     <title>Vassy</title>
     <link>https://vassy.app</link>
     <item>
-      <title>Vassy 1.1.1</title>
-      <pubDate>Sat, 28 Nov 2026 12:40:40 +0000</pubDate>
-      <sparkle:version>1.1.1</sparkle:version>
-      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+      <title>Vassy 1.1.2</title>
+      <pubDate>Sat, 28 Nov 2026 13:26:49 +0000</pubDate>
+      <sparkle:version>1.1.2</sparkle:version>
+      <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <enclosure url="https://www.vassy.app/download/Vassy.zip" type="application/octet-stream" sparkle:edSignature="52GwaGG79zca8WGbIcyOYNLXMkNFCwyr3+5KkcpqzX5Lk2FTzK7tBuOIWKaOPvrTcD3fKDeIIL1FYHPLs/5DCA==" length="2577360" />
+      <enclosure url="https://www.vassy.app/download/Vassy.zip" type="application/octet-stream" sparkle:edSignature="qNvf3C/6XsTt5m/LlbNLa7c6eTXvxwi21mCZ16TbLEn2UI9U97ooBLmqdacM3wyqWMkJ2T2FkDcFi5QAq1c3AA==" length="2582494" />
     </item>
   </channel>
 </rss>
