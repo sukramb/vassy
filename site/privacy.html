@@ -21,7 +21,7 @@
 <main>
 <p class="kicker">Legal &middot; GDPR</p>
 <h1>Privacy</h1>
-<p class="lede">Short version: this website sets no cookies and counts visits anonymously, and the Vassy app sends us nothing but a check for a new version, which you can switch off. Last updated: November 2026.</p>
+<p class="lede">Short version: this website sets no cookies and counts visits anonymously, and the Vassy app sends us nothing; it only fetches its own updates, which you can switch off. Last updated: November 2026.</p>
 
 <h2>Who is responsible</h2>
 <address>
@@ -55,7 +55,7 @@ Email: <a href="mailto:support@heartly.io">support@heartly.io</a>
 <ul>
 <li>Its state (which sessions are waiting, their summaries, your settings) is stored in the folder <code>~/.vassy</code> on your Mac.</li>
 <li>To write a summary, Vassy hands an excerpt of a session's transcript to the Claude Code or Codex command-line tool that is already installed and signed in on your Mac. That tool sends it to its provider (Anthropic or OpenAI) under your own account and that provider's terms. We are not involved in this and cannot see it.</li>
-<li>Update check: every few hours the app requests the file <code>vassy.app/version.json</code> to see whether a newer version exists. The request carries no identifier and no cookies; as with any visit to this website, the hosting provider processes your IP address to answer it (see above). You can switch the check off in the app&rsquo;s gear menu under &ldquo;Check for updates&rdquo;.</li>
+<li>Updates: every few hours the app requests the file <code>vassy.app/appcast.xml</code> to see whether a newer version exists. If one does, it downloads it from vassy.app, verifies its signature and installs it. These requests carry no identifier and no cookies, only the app&rsquo;s name and version; as with any visit to this website, the hosting provider processes your IP address to answer them (see above). You can switch this off in the app&rsquo;s gear menu under &ldquo;Update automatically&rdquo;.</li>
 <li>macOS may contact Apple to check the app's notarization when you first open it. That is a function of macOS, not of Vassy.</li>
 </ul>
 

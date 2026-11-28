@@ -88,7 +88,6 @@ enum Main {
             MainActor.assumeIsolated {
                 _ = NSApplication.shared
                 let store = Store()
-                Updates.shared.check()
                 RunLoop.main.run(until: Date().addingTimeInterval(2))
                 let setup = args.contains("setup")
                 let host = setup ? NSHostingView(rootView: AnyView(SetupView {}))
@@ -180,6 +179,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUser
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        Updates.shared.panelIsOpen = { [weak self] in self?.panel.isVisible == true }
         Updates.shared.start()
         // First run: nothing is registered yet, so ask which agents to watch.
         if Agent.allCases.allSatisfy({ !Setup.isRegistered($0) }) { SetupWindow.show() }
@@ -273,11 +273,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUser
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        if response.notification.request.identifier == Updates.notificationId {
-            NSWorkspace.shared.open(Updates.downloadPage)
-        } else {
-            self.show()
-        }
+        self.show()
         completionHandler()
     }
 

@@ -55,9 +55,9 @@ struct RootView: View {
             let busy = store.running.count
             Text(busy == 0 ? "No session is working" : "Working right now: \(busy)")
             if let version = updates.available {
-                Button("Update to \(version)") { NSWorkspace.shared.open(Updates.downloadPage) }
+                Button("Update to \(version)") { updates.check() }
                     .buttonStyle(.plain).fontWeight(.semibold).foregroundStyle(Color.waiting)
-                    .help("Opens vassy.app, where the new version can be downloaded")
+                    .help("Downloads the new version and restarts Vassy")
             }
             Spacer()
             Text("⌥⌘C").fontWeight(.semibold)
@@ -65,7 +65,8 @@ struct RootView: View {
                 Toggle("Launch at login", isOn: Binding(
                     get: { SMAppService.mainApp.status == .enabled },
                     set: { on in try? on ? SMAppService.mainApp.register() : SMAppService.mainApp.unregister() }))
-                Toggle("Check for updates", isOn: Binding(get: { updates.enabled }, set: { updates.enabled = $0 }))
+                Toggle("Update automatically", isOn: Binding(get: { updates.enabled }, set: { updates.enabled = $0 }))
+                Button("Check for updates…") { updates.check() }
                 Button("Agents…") { SetupWindow.show() }
                 Text("Vassy \(Updates.current)")
                 Divider()

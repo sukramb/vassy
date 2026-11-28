@@ -1,68 +1,98 @@
 import AppKit
+import Sparkle
 import UserNotifications
 
-/// Looks every few hours whether a newer Vassy is on vassy.app. If so, it sends one
-/// notification per new version and shows an update link in the panel.
-/// It is the app's only network request: a GET for a small static file, without cookies or
-/// any identifier, and it can be switched off in the gear menu.
+/// Keeps Vassy up to date with Sparkle: every few hours it reads the appcast on vassy.app,
+/// downloads a newer version, checks its signature and installs it while the panel is closed.
+/// The appcast and the download are the app's only network requests. They carry no cookies
+/// and no identifier, and the whole thing can be switched off in the gear menu.
 @MainActor
-final class Updates: ObservableObject {
+final class Updates: NSObject, ObservableObject, SPUUpdaterDelegate {
     static let shared = Updates()
-    static let downloadPage = URL(string: "https://vassy.app/#install")!
-    private static let feed = URL(string: "https://vassy.app/version.json")!
-    private static let enabledKey = "checkForUpdates"
-    private static let notifiedKey = "updateNotifiedFor"
     static let notificationId = "vassy-update"
+    private static let lastVersionKey = "lastRunVersion"
 
-    /// Version offered for download when it is newer than the running one.
+    /// Version found on vassy.app that is newer than the running one.
     @Published private(set) var available: String?
-    private var timer: Timer?
+    /// Tells whether the panel is on screen; an update is never installed under the user's hands.
+    var panelIsOpen: () -> Bool = { false }
 
-    var enabled: Bool {
-        get { UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true }
-        set {
-            UserDefaults.standard.set(newValue, forKey: Self.enabledKey)
-            objectWillChange.send()
-            if newValue { check() } else { available = nil }
-        }
-    }
+    private var controller: SPUStandardUpdaterController?
+    private var install: (() -> Void)?
+    private var timer: Timer?
 
     static var current: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0" }
 
+    /// Automatic check, download and install. Off means nothing is requested until asked.
+    var enabled: Bool {
+        get { controller?.updater.automaticallyChecksForUpdates ?? false }
+        set {
+            guard let updater = controller?.updater else { return }
+            updater.automaticallyChecksForUpdates = newValue
+            updater.automaticallyDownloadsUpdates = newValue
+            objectWillChange.send()
+        }
+    }
+
     func start() {
-        check()
-        timer = Timer.scheduledTimer(withTimeInterval: 6 * 3600, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.check() }
-        }
+        // Sparkle needs an app bundle with a feed; a bare binary (tests) has neither.
+        guard controller == nil, Bundle.main.bundleIdentifier != nil,
+              Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") != nil else { return }
+        controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
+        announceIfUpdated()
     }
 
+    /// Asked for by the user: shows Sparkle's window with the result and an install button.
     func check() {
-        guard enabled else { return }
-        let config = URLSessionConfiguration.ephemeral
-        config.httpCookieStorage = nil
-        config.timeoutIntervalForRequest = 15
-        config.httpAdditionalHeaders = ["User-Agent": "Vassy"]
-        Task {
-            guard let (data, response) = try? await URLSession(configuration: config).data(from: Self.feed),
-                  (response as? HTTPURLResponse)?.statusCode == 200, data.count < 4096,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let latest = json["version"] as? String,
-                  latest.range(of: #"^[0-9]{1,4}(\.[0-9]{1,4}){0,3}\z"#, options: .regularExpression) != nil
-            else { return }
-            available = Self.isNewer(latest, than: Self.current) ? latest : nil
-            if available != nil { notifyOnce(latest) }
+        NSApp.activate(ignoringOtherApps: true)
+        controller?.checkForUpdates(nil)
+    }
+
+    // MARK: SPUUpdaterDelegate
+
+    nonisolated func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+        let version = item.displayVersionString
+        Task { @MainActor in self.available = version }
+    }
+
+    nonisolated func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
+        Task { @MainActor in self.available = nil }
+    }
+
+    /// The update is downloaded and verified. A menu bar app rarely quits, so instead of
+    /// waiting for that, install as soon as the panel is closed; Sparkle relaunches Vassy.
+    nonisolated func updater(_ updater: SPUUpdater, willInstallUpdateOnQuit item: SUAppcastItem,
+                             immediateInstallationBlock: @escaping () -> Void) -> Bool {
+        Task { @MainActor in
+            self.install = immediateInstallationBlock
+            self.installWhenIdle()
+        }
+        return true
+    }
+
+    private func installWhenIdle() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, let install = self.install, !self.panelIsOpen() else { return }
+                self.timer?.invalidate()
+                self.install = nil
+                install()
+            }
         }
     }
 
-    /// One notification per new version; clicking it opens the download page.
-    private func notifyOnce(_ version: String) {
-        // Notifications need an app bundle; a bare binary (tests) has none.
-        guard Bundle.main.bundleIdentifier != nil,
-              UserDefaults.standard.string(forKey: Self.notifiedKey) != version else { return }
-        UserDefaults.standard.set(version, forKey: Self.notifiedKey)
+    // MARK: Notification after an update
+
+    /// One notification on the first start of a newer version, so a silent update is not a surprise.
+    private func announceIfUpdated() {
+        let defaults = UserDefaults.standard, current = Self.current
+        let last = defaults.string(forKey: Self.lastVersionKey)
+        defaults.set(current, forKey: Self.lastVersionKey)
+        guard let last, Self.isNewer(current, than: last) else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Vassy \(version) is available"
-        content.body = "Click to open vassy.app and download the update."
+        content.title = "Vassy was updated to \(current)"
+        content.body = "The new version is running. Nothing else to do."
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: Self.notificationId, content: content, trigger: nil))
     }
 
