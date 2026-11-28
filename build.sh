@@ -23,9 +23,8 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp "$BIN" "$APP/Contents/MacOS/Vassy"
 mkdir -p "$APP/Contents/Resources" && cp "$HERE/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
-# Sparkle installs the updates. The binary finds it through an rpath into Frameworks.
+# Sparkle installs the updates. The binary finds it through the rpath set in Package.swift.
 mkdir -p "$APP/Contents/Frameworks" && ditto "$PRODUCTS/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
-install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/Vassy" 2>/dev/null
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

@@ -11,7 +11,10 @@ let package = Package(
     targets: [
         .executableTarget(name: "Vassy",
                           dependencies: [.product(name: "Sparkle", package: "Sparkle")],
-                          path: "Sources/Vassy")
+                          path: "Sources/Vassy",
+                          // Sparkle.framework sits next to a bare binary and in Frameworks inside the app.
+                          linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@loader_path",
+                                                         "-Xlinker", "-rpath", "-Xlinker", "@loader_path/../Frameworks"])])
     ],
     swiftLanguageModes: [.v5]
 )
